@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PANORAMA GIS â€” ASE (AnÃ¡lise Socioambiental Expedita)</title>
+  <link rel="icon" type="image/png" href="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            emerald: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10B981', // Verde Esmeralda Corporativo Oficial
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Turf.js for instant geospatial area, perimeter & intersection calculations -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <!-- shpjs for reading Shapefile (.zip / .shp) directly in the browser -->
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+  <script src="https://unpkg.com/@mapbox/shp-write@0.4.3/shpwrite.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-[#020617] text-slate-100 font-sans antialiased overflow-hidden select-none">
+  <!-- Backdrop para gavetas mobile -->
+  <div id="webgis-drawer-backdrop" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-30 transition-opacity"></div>
+
+  <header id="top-bar" class="h-20 sm:h-24 bg-[#0F172A] border-b border-white/[0.08] px-3 sm:px-6 flex items-center justify-between z-40 relative transition-all duration-300">
+    <!-- Left: Brand / White-Label Identity & Mobile Drawer Triggers -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      <button id="btn-toggle-layers-mobile" class="lg:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-[#00A0FF] hover:bg-slate-700 transition cursor-pointer touch-target-min flex items-center justify-center" title="Abrir Camadas">
+        <i data-lucide="layers" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Panorama GIS Clean Eye Emblem -->
+      <div id="brand-logo-box" class="h-16 sm:h-20 flex items-center justify-center shrink-0">
+        <img id="default-panorama-svg" src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Emblema Panorama GIS" class="h-11 sm:h-16 w-auto object-contain transition-all" />
+        <img id="custom-uploaded-logo" src="" alt="Logo Consultoria" class="hidden h-11 sm:h-16 w-auto object-contain p-1 rounded-lg bg-white" />
+      </div>
+
+      <div class="flex flex-col justify-center">
+        <div class="flex items-center gap-2">
+          <span id="brand-title" class="font-black text-lg sm:text-2xl tracking-tight text-white leading-none">PANORAMA <span class="text-[#00A0FF]">GIS</span></span>
+          <span id="mode-badge" class="hidden xs:inline-block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30 shadow-sm">
+            Modo Consultor
+          </span>
+        </div>
+        <p id="brand-subtitle" class="text-[11px] sm:text-xs text-slate-300 font-medium tracking-wide mt-0.5 sm:mt-1 truncate max-w-[180px] sm:max-w-none">Análise Socioambiental Expedita - ASE</p>
+      </div>
+
+      <div class="h-6 w-px bg-slate-800 mx-1.5 hidden md:block"></div>
+
+
+      <!-- Active Client & Project Selector -->
+      <div class="hidden xl:flex items-center gap-2 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-1.5">
+        <i data-lucide="folder-git-2" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+        <select id="scenario-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer pr-1">
+          <!-- Populated dynamically per logged-in consultancy -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Center/Right Actions: ArcGIS Application Style (Clean & Single Settings Icon - Print 3) -->
+    <div class="flex items-center gap-3">
+      <!-- Config Button in Top Right (Exact Screenshot 3 integration) -->
+      <div class="relative" id="ase-config-container">
+        <button id="btn-ase-settings" class="w-10 h-10 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 hover:border-[#00A0FF] flex items-center justify-center transition-all shadow-sm cursor-pointer group" title="ConfiguraÃ§Ãµes e AdministraÃ§Ã£o">
+          <i data-lucide="settings" class="w-5 h-5 text-slate-300 group-hover:text-[#0094e8] transition-transform duration-300 group-hover:rotate-45"></i>
+        </button>
+
+        <!-- Dropdown Box (Screenshot 3: Ãrea da Consultoria & Painel Provedor) -->
+        <div id="ase-settings-dropdown" class="hidden absolute right-0 mt-2.5 w-64 bg-[#0F172A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] p-2 z-[100] divide-y divide-slate-800 text-xs select-none">
+          <div class="py-1 space-y-1">
+            <!-- OpÃ§Ã£o 1: Ãrea da Consultoria (Screenshot 3) -->
+            <button id="menu-opt-clients-hub" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-white font-bold transition text-left cursor-pointer group">
+              <i data-lucide="building-2" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+              <span class="text-xs">Ãrea da Consultoria</span>
+            </button>
+
+            <!-- OpÃ§Ã£o 2: Painel Provedor (Admin) (Screenshot 3) -->
+            <button id="menu-opt-provider-admin" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-amber-300 font-bold transition text-left cursor-pointer group">
+              <i data-lucide="shield-check" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span class="text-xs text-amber-300">Painel Provedor (Admin)</span>
+            </button>
+          </div>
+
+          <div class="pt-2 px-1">
+            <a href="index.html" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-[11px] font-semibold transition">
+              <span class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-3.5 h-3.5 text-[#0094e8]"></i> Ir para Tela Inicial</span>
+              <i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== CLIENT PORTAL BANNER (Hidden in Consultant Mode) ==================== -->
+  <div id="client-portal-banner" class="hidden bg-gradient-to-r from-slate-900 via-[#0F172A] to-[#1E293B] border-b border-[#00A0FF]/30 px-6 py-2.5 flex items-center justify-between z-20 relative">
+    <div class="flex items-center gap-3">
+      <span class="flex h-2.5 w-2.5 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A0FF] opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00A0FF]"></span>
+      </span>
+      <p class="text-xs font-medium text-sky-100">
+        <strong>Sala Digital Exclusiva do Cliente:</strong> Você está visualizando o portal exatamente como <span id="banner-client-name" class="underline font-bold">Cliente</span> vê ao abrir o link enviado pela consultoria.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="portal-url-preview" class="text-[11px] font-mono bg-slate-950/60 text-[#00A0FF] px-2.5 py-1 rounded border border-[#00A0FF]/30 hidden sm:inline-block">
+        —
+      </span>
+      <button id="btn-copy-portal-link" class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-md font-semibold flex items-center gap-1.5 border border-white/15 transition">
+        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Link Deste Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <main class="flex webgis-main-container w-full relative overflow-hidden">
+
+    <!-- ==================== LEFT SIDEBAR: LAYERS & PROJECT TOOLS ==================== -->
+    <aside id="left-sidebar" class="webgis-drawer-left w-80 bg-[#0F172A] border-r border-white/[0.08] flex flex-col justify-between z-20 shrink-0 transition-all duration-300">
+      <!-- Mobile Close Drawer Header -->
+      <div class="lg:hidden p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span class="font-extrabold text-sm text-white">Camadas & Ferramentas</span>
+        </div>
+        <button id="btn-close-left-drawer" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer touch-target-min" title="Fechar Gaveta">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
+
+        <!-- Consultant Tools Card (Hidden in Client Mode) -->
+        <div id="consultant-tools-card" class="bg-[#1E293B] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between gap-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-[#00A0FF] shrink-0"></i>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300 truncate" title="Camadas do Empreendimento">
+                Camadas
+              </span>
+              <span id="layers-quota-badge" class="whitespace-nowrap shrink-0 text-[11px] font-mono px-2 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 font-bold">0 / 5</span>
+            </div>
+
+          </div>
+          <!-- Primary Action: Import KML / Shapefile / GeoJSON -->
+          <label id="upload-btn-wrapper" for="file-upload" class="btn-ase-primary cursor-pointer w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold active:scale-95 group">
+            <i data-lucide="upload-cloud" class="w-4 h-4 text-white shrink-0 group-hover:-translate-y-0.5 transition-transform"></i>
+            <span>+ Adicionar Camada (KML/SHP)</span>
+            <input id="file-upload" type="file" accept=".kml,.kmz,.zip,.shp,.geojson,.json" class="hidden" />
+          </label>
+
+          <!-- Draw Geometry Options: Polygon, Line, Point -->
+          <div class="grid grid-cols-3 gap-1.5">
+            <button id="btn-draw-polygon" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Desenhar Polígono no mapa">
+              <i data-lucide="pentagon" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Polígono
+            </button>
+            <button id="btn-draw-line" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Desenhar Linha/Traçado no mapa">
+              <i data-lucide="spline" class="w-3.5 h-3.5 text-cyan-400"></i> Linha
+            </button>
+            <button id="btn-draw-point" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Marcar Ponto no mapa">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-400"></i> Ponto
+            </button>
+          </div>
+
+          <!-- Quick CAR Lookup Simulation -->
+          <div class="pt-1">
+            <label class="text-[11px] text-slate-400 block mb-1">Recibo do CAR / Matrícula do imóvel (opcional):</label>
+            <div class="flex gap-1.5">
+              <input id="car-input" type="text" placeholder="Ex.: GO-5200000-XXXXXXXX" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00A0FF]" />
+              <button id="btn-search-car" class="btn-ase-secondary px-2.5 py-1.5 text-xs font-semibold cursor-pointer" title="Salvar no projeto">
+                <i data-lucide="search" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer Tree: Project Layers (Até 5 por projeto) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="list" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Camadas Adicionadas
+            </h3>
+            <button id="btn-run-all-analysis" class="btn-ase-primary shrink-0 text-[11px] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 group" title="Executar cruzamento socioambiental de todas as camadas do projeto">
+              <i data-lucide="play" class="w-3 h-3 fill-white text-white group-hover:scale-110 transition-transform"></i> <span>Analisar Todas</span>
+            </button>
+          </div>
+          <div class="space-y-2" id="project-layers-list">
+            <div class="p-3 rounded-lg border border-dashed border-slate-700 text-xs text-slate-400 text-center">
+              Nenhuma camada adicionada. Importe ou desenhe acima (até 5 camadas).
+            </div>
+          </div>
+        </div>
+
+        <!-- Bases oficiais: consumidas AO VIVO direto dos órgãos (lista gerada por app.js a partir de govlayers.js) -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-400"></i> Bases Oficiais (Governo)
+            </h3>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 font-mono">Ao vivo</span>
+          </div>
+          <div id="gov-layers-list" class="space-y-1.5"></div>
+          <p class="text-[10px] text-slate-500 mt-2 leading-relaxed">Camadas lidas diretamente dos servidores oficiais (WMS/WFS), sem cópia local: sempre na versão publicada pelo órgão. Clique no mapa para identificar feições.</p>
+        </div>
+      </div>
+
+      <!-- Basemap Switcher Footer -->
+      <div class="p-3.5 border-t border-white/[0.08] bg-[#0F172A]">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">Mapa Base (Fundo)</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" data-basemap="satellite" class="basemap-btn active">Satélite HD</button>
+          <button type="button" data-basemap="topo" class="basemap-btn">Topográfico</button>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- ==================== CENTER: INTERACTIVE MAP ==================== -->
+    <section class="flex-1 relative h-full bg-[#020617]">
+      <div id="map" class="w-full h-full z-10"></div>
+
+      <!-- Global SVG Pattern for Leaflet Hatching (Red Hatching for Buffer) -->
+      <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
+        <defs>
+          <pattern id="red-hatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#ef4444" fill-opacity="0.12"></rect>
+            <line x1="0" y1="0" x2="0" y2="10" stroke="#ef4444" stroke-width="2.5" stroke-opacity="0.85"></line>
+          </pattern>
+        </defs>
+      </svg>
+
+      <!-- Floating Map Toolbar (Top Left over Map) -->
+      <div class="absolute top-4 left-4 z-20 flex items-center gap-2 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 rounded-xl p-1.5 shadow-xl">
+        <button id="btn-zoom-property" class="btn-ase-tool flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold cursor-pointer" title="Enquadrar Imóvel">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Enquadrar Área
+        </button>
+        <button id="btn-measure-ruler" class="btn-ase-tool flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold cursor-pointer" title="Régua de Medição de Distâncias">
+          <i data-lucide="ruler" class="w-3.5 h-3.5 text-[#00A0FF]"></i> <span id="ruler-btn-label">Régua</span>
+        </button>
+        <button id="btn-measure-tool" class="btn-ase-tool flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold cursor-pointer" title="Clique em feições para inspecionar">
+          <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Inspecionar Feição
+        </button>
+        <button id="btn-Add-comment" class="btn-ase-tool flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold cursor-pointer" title="Adicionar nota de revisão no mapa">
+          <i data-lucide="message-square-plus" class="w-3.5 h-3.5 text-amber-400"></i> <span id="comment-btn-label">Adicionar Nota no Mapa</span>
+        </button>
+      </div>
+
+      <!-- Drawing Helper Banner (Hidden unless drawing) -->
+      <div id="drawing-helper" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-[#0F172A]/85 backdrop-blur-[10px] border border-emerald-500/40 text-emerald-100 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+        <i data-lucide="pen-tool" class="w-4 h-4 text-[#00A0FF] animate-bounce"></i>
+        <span id="drawing-instructions"><strong>Modo Desenho:</strong> Clique no mapa para marcar os pontos.</span>
+        <button id="btn-finish-draw" class="btn-ase-primary text-xs font-semibold px-3 py-1.5 rounded-md cursor-pointer">Concluir Camada</button>
+        <button id="btn-cancel-draw" class="text-slate-300 hover:text-white underline ml-1 cursor-pointer">Cancelar</button>
+      </div>
+
+      <!-- Ruler Measurement Banner (Hidden unless measuring) -->
+      <div id="measure-banner" class="hidden absolute top-4 right-4 z-30 bg-[#0F172A]/85 backdrop-blur-[10px] border border-emerald-500/40 rounded-xl px-4 py-2.5 shadow-2xl flex items-center gap-3 text-xs">
+        <div class="w-7 h-7 rounded-lg bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/40 flex items-center justify-center shrink-0">
+          <i data-lucide="ruler" class="w-4 h-4"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            Régua de Medição
+            <span id="measure-badge-state" class="text-[9px] px-1.5 py-0.2 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 uppercase font-mono font-bold">Ativa</span>
+          </span>
+          <span id="measure-instructions" class="text-[11px] text-slate-300">Clique no mapa para marcar o ponto inicial.</span>
+        </div>
+        <div class="h-6 w-px bg-slate-600/80 mx-1"></div>
+        <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-white bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/80">
+          <span class="text-slate-400 text-[10px]">TOTAL:</span>
+          <span id="measure-total-val" class="text-[#00A0FF] text-sm">0 m</span>
+        </div>
+        <button id="btn-measure-finish" class="hidden px-2.5 py-1 rounded-lg bg-[#00A0FF]/20 hover:bg-[#008ee0]/30 text-[#00A0FF] border border-[#00A0FF]/40 text-xs font-bold transition cursor-pointer">
+          Concluir
+        </button>
+        <button id="btn-measure-clear" class="btn-ase-secondary px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer" title="Limpar pontos">
+          Limpar
+        </button>
+        <button id="btn-measure-close" class="p-1 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition cursor-pointer" title="Fechar régua">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Floating Bottom Coordinates & Scale Bar -->
+      <div class="absolute bottom-4 left-4 z-20 flex items-center gap-4 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 px-3.5 py-1.5 rounded-lg text-[11px] font-mono text-slate-300 shadow-lg">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+          <span>Datum: <strong>SIRGAS 2000 (EPSG:4674)</strong></span>
+        </div>
+        <div class="h-3 w-px bg-slate-700"></div>
+        <div id="mouse-coords">Lat: -16.7654° | Lon: -47.6123°</div>
+      </div>
+
+      <!-- Floating Map Dynamic Legend (Bottom Right over Map) -->
+      <div id="map-legend-wrapper" class="absolute bottom-4 right-4 z-20 flex flex-col items-end">
+        <!-- Collapsible Legend Card -->
+        <div id="map-legend-card" class="hidden mb-2 w-72 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 rounded-2xl p-3.5 shadow-2xl text-xs select-none max-h-80 flex flex-col transition-all duration-200">
+          <!-- Legend Header -->
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-600/60 shrink-0">
+            <div class="flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i>
+              <span class="font-extrabold text-white text-xs uppercase tracking-wider">Legenda do Mapa</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="legend-badge-count" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30">0 ativas</span>
+              <button id="btn-close-legend" class="p-1 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer" title="Minimizar legenda">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Scrollable List of Active Layers -->
+          <div id="map-legend-items" class="space-y-3 overflow-y-auto custom-scrollbar flex-1 pr-1">
+            <!-- Dynamic Active Layers populated by updateMapLegend() -->
+          </div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button id="btn-toggle-legend" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0F172A]/85 hover:bg-[#1E293B] backdrop-blur-[10px] border border-white/10 text-xs font-bold text-white shadow-xl transition-all cursor-pointer group active:scale-95" title="Abrir/Fechar Legenda das Camadas Ativas">
+          <i data-lucide="list" class="w-4 h-4 text-[#00A0FF] group-hover:scale-110 transition-transform"></i>
+          <span>Legenda</span>
+          <span id="legend-btn-badge" class="px-1.5 py-0.5 rounded-full bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 text-[10px] font-mono font-bold">0</span>
+          <i data-lucide="chevron-up" id="legend-chevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200"></i>
+        </button>
+      </div>
+    </section>
+    <!-- ==================== RIGHT SIDEBAR: AUTOMATED DIAGNOSIS & PORTAL APPROVAL ==================== -->
+    <aside id="right-sidebar" class="webgis-drawer-right w-96 bg-[#0F172A] border-l border-white/[0.08] flex flex-col justify-between z-20 shrink-0 overflow-y-auto custom-scrollbar">
+      <!-- Mobile Close Drawer Header -->
+      <div class="lg:hidden p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
+          <span class="font-extrabold text-sm text-white">Diagnóstico Territorial</span>
+        </div>
+        <button id="btn-close-right-drawer" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer touch-target-min" title="Fechar Gaveta">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-5 space-y-5">
+
+        <!-- Header of Diagnosis -->
+        <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#00A0FF] bg-[#00A0FF]/15 px-2 py-0.5 rounded border border-[#00A0FF]/30" id="active-client-pill">
+                Projeto
+              </span>
+            </div>
+            <h2 id="prop-title" class="text-base font-bold text-white">Nenhum projeto selecionado</h2>
+            <p id="prop-location" class="text-xs text-slate-400">Área da Consultoria → Cadastrar Novo Projeto</p>
+          </div>
+          <div id="overall-risk-badge" class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1.5 shrink-0">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Sem análise
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid (Calculated in Real Time with Turf.js) -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="bg-[#1E293B] border border-white/[0.08] rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Área Total</span>
+            <span id="kpi-area" class="text-sm font-bold font-mono text-white">—</span>
+            <span id="kpi-modulos" class="text-[10px] text-slate-400 block mt-0.5">—</span>
+          </div>
+          <div class="bg-[#1E293B] border border-white/[0.08] rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Perímetro</span>
+            <span id="kpi-perimeter" class="text-sm font-bold font-mono text-white">—</span>
+            <span id="kpi-vertices" class="text-[10px] text-slate-400 block mt-0.5">—</span>
+          </div>
+          <div class="bg-[#1E293B] border border-white/[0.08] rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Bases com Alerta</span>
+            <span id="kpi-rl" class="text-sm font-bold font-mono text-[#00A0FF]">—</span>
+            <span id="kpi-rl-min" class="text-[10px] text-[#00A0FF]/80 block mt-0.5">bases consultadas</span>
+          </div>
+        </div>
+
+        <!-- Automated National Crossing Matrix -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="scan-search" class="w-4 h-4 text-[#00A0FF]"></i> Cruzamento com Bases Nacionais
+            </h3>
+            <span id="crossing-timestamp" class="text-[10px] text-slate-400 font-mono">Processado em 0.8s</span>
+          </div>
+
+          <div id="diagnosis-cards-container" class="space-y-2.5">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </div>
+
+        <!-- Ações de Entrega do Estudo -->
+        <div class="bg-[#1E293B] border border-white/[0.08] rounded-xl p-4 space-y-2.5">
+          <button id="btn-open-report-2" class="btn-ase-primary w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+            <i data-lucide="printer" class="w-4 h-4"></i> Gerar Laudo PDF
+          </button>
+          <button id="btn-download-layers-package" class="btn-ase-secondary w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+            <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Baixar Camadas (KML/SHP)
+          </button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==================== NEW MODAL: CONSULTANCY AREA & PROJECT REGISTRATION (ERANI BASTOS / PROGEA) ==================== -->
+  <div id="modal-clients-hub" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-5xl w-full p-6 shadow-2xl space-y-6 my-8">
+      <!-- Header with Consultancy Switcher & Quota Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30">
+            <i data-lucide="building-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="hub-consultancy-title" class="text-lg font-extrabold text-white">Área da Consultoria</h3>
+              <span id="hub-plan-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30">—</span>
+            </div>
+            <p class="text-xs text-slate-400">Gerencie seu plano, cadastre projetos (do mesmo cliente ou clientes diferentes) e compartilhe o portal com sua marca.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="btn-close-clients-hub" class="text-slate-400 hover:text-white p-1" title="Fechar (Esc)">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- HUB NAVIGATION TABS -->
+      <div class="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
+        <button type="button" data-hub-tab="projects" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/40">
+          <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+          <span>Projetos & Clientes</span>
+        </button>
+        <button type="button" data-hub-tab="branding" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="palette" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span>Marca da Consultoria</span>
+        </button>
+        <button type="button" data-hub-tab="team" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="users" class="w-4 h-4 text-cyan-400"></i>
+          <span>Equipe Técnica</span>
+        </button>
+        <button type="button" data-hub-tab="quota" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="gauge" class="w-4 h-4 text-amber-400"></i>
+          <span>Franquia & Plano</span>
+        </button>
+      </div>
+
+      <!-- TAB PANE 1: PROJETOS & CLIENTES (DEFAULT) -->
+      <div id="hub-tab-pane-projects" class="space-y-5">
+        <!-- Add New Project Form (Supports Same Client or New Client) -->
+        <div class="bg-slate-800/50 border border-[#00A0FF]/30 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#00A0FF] flex items-center gap-1.5">
+              <i data-lucide="folder-plus" class="w-4 h-4"></i> Cadastrar Novo Projeto na Carteira da Consultoria
+            </h4>
+            <span class="text-[11px] text-slate-400">Você pode cadastrar vários imóveis para um mesmo cliente ou para clientes diferentes</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+            <div class="sm:col-span-4">
+              <label class="text-slate-300 font-semibold block mb-1">1. Cliente Final (Mesmo ou Novo)</label>
+              <input id="new-client-name" list="existing-clients-datalist" type="text" placeholder="Digite ou selecione um cliente..." class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+              <datalist id="existing-clients-datalist">
+              </datalist>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="text-slate-300 font-semibold block mb-1">2. Nome do Projeto / Gleba</label>
+              <input id="new-client-project" type="text" placeholder="Ex: Fazenda São José (Mat. 4102)" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="text-slate-300 font-semibold block mb-1">3. Município / UF</label>
+              <input id="new-client-city" type="text" placeholder="Ex: Jataí / GO" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            </div>
+            <div class="sm:col-span-3 flex items-end">
+              <button id="btn-create-client-portal" class="btn-ase-primary w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Cadastrar & Abrir no Mapa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Client Projects Table -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Projetos Cadastrados por esta Consultoria</h4>
+            <span class="text-[11px] text-slate-400">Analise no mapa, exporte Laudo/KML ou compartilhe o Portal com o seu cliente</span>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-800 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700">
+                  <th class="py-3 px-4 font-bold">Cliente Final</th>
+                  <th class="py-3 px-4 font-bold">Projeto / Imóvel</th>
+                  <th class="py-3 px-4 font-bold">Link de Compartilhamento (Cliente)</th>
+                  <th class="py-3 px-4 font-bold">PIN</th>
+                  <th class="py-3 px-4 font-bold text-right">Ações do Consultor</th>
+                </tr>
+              </thead>
+              <tbody id="clients-hub-tbody" class="divide-y divide-slate-800 bg-[#243545]/60">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 2: MARCA DA CONSULTORIA (WHITE-LABEL) -->
+      <div id="hub-tab-pane-branding" class="space-y-4 hidden">
+        <div id="hub-whitelabel-section" class="bg-slate-950/90 border border-[#00A0FF]/30 rounded-xl p-5 space-y-4 shadow-inner">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded-lg bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30">
+                <i data-lucide="palette" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Marca Própria da Consultoria (Identidade Visual)</h4>
+                <p class="text-xs text-slate-400">Configure sua logomarca, razão social e ART para aparecer nos laudos e no portal dos seus clientes</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30 font-bold">White-Label</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 text-xs">
+            <!-- Logo Upload Box with Preview -->
+            <div class="md:col-span-4 bg-[#243545]/90 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-between text-center space-y-3">
+              <span class="text-slate-300 font-semibold block text-left w-full">Logomarca da Consultoria</span>
+              
+              <div id="hub-logo-preview-box" class="w-full h-24 rounded-lg bg-slate-950 border border-dashed border-slate-700 flex items-center justify-center p-2 overflow-hidden relative">
+                <img id="hub-logo-preview" src="" alt="Sua Logo" class="hidden max-h-full max-w-full object-contain" />
+                <div id="hub-logo-empty" class="text-slate-500 flex flex-col items-center gap-1">
+                  <i data-lucide="image" class="w-6 h-6 opacity-40"></i>
+                  <span class="text-[11px]">Nenhuma logo personalizada</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 w-full pt-1">
+                <label for="hub-logo-upload" class="flex-1 cursor-pointer flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#00A0FF] hover:bg-[#00A0FF] text-white font-bold transition text-xs shadow-sm">
+                  <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                  <span>Enviar Logo</span>
+                  <input id="hub-logo-upload" type="file" accept="image/*" class="hidden" />
+                </label>
+                <button id="btn-hub-reset-logo" type="button" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs transition border border-slate-700" title="Remover Logo Customizada">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <span class="text-[10px] text-slate-500">Formatos aceitos: PNG, JPG ou SVG (máx. 350 KB)</span>
+            </div>
+
+            <!-- Text Inputs & Actions -->
+            <div class="md:col-span-8 flex flex-col justify-between space-y-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Nome da Empresa de Consultoria / Razão Social</label>
+                <input id="hub-company-name" type="text" placeholder="Ex: VerdeVivo Consultoria & Engenharia Ambiental" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF] font-medium" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Slogan / Especialidade no Cabeçalho</label>
+                  <input id="hub-company-slogan" type="text" placeholder="Ex: Engenharia e Soluções Territoriais" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+                </div>
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Responsável Técnico (CREA / CRBio / CFT)</label>
+                  <input id="hub-rt-name" type="text" placeholder="Ex: Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+                </div>
+              </div>
+
+              <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80">
+                <button id="btn-hub-reset-to-default-brand" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="Redefinir campos e logomarca para o padr&#227;o original PANORAMA GIS">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span>Restaurar Padr&#227;o PANORAMA</span>
+                </button>
+                <div class="flex items-center gap-3">
+                  <span id="hub-brand-save-status" class="text-[11px] text-[#00A0FF] font-medium"></span>
+                  <button id="btn-hub-save-brand" type="button" class="btn-ase-primary px-5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Salvar Marca da Consultoria</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 3: EQUIPE TÉCNICA -->
+      <div id="hub-tab-pane-team" class="space-y-4 hidden">
+        <div id="team-box" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-[#00A0FF]"></i> Equipe e Acessos</h4>
+            <span id="team-seats-text" class="text-[11px] font-mono text-[#00A0FF]">—</span>
+          </div>
+          <div id="team-list" class="space-y-1.5 text-xs"></div>
+          <div id="team-add-form" class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+            <input id="team-new-name" type="text" placeholder="Nome do colaborador" class="sm:col-span-4 bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            <input id="team-new-email" type="email" placeholder="E-mail do colaborador" class="sm:col-span-5 bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            <button id="btn-team-add" class="btn-ase-primary sm:col-span-3 py-2 px-3 rounded-lg text-xs font-semibold cursor-pointer">Convidar por e-mail</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 4: FRANQUIA & PLANO -->
+      <div id="hub-tab-pane-quota" class="space-y-4 hidden">
+        <!-- 3 SUBSCRIPTION PLANS SELECTOR (Essencial / Profissional / Corporativo) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="award" class="w-4 h-4 text-[#00A0FF]"></i> Seu plano (a troca de plano é feita pelo gestor do Panorama GIS)
+            </span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Plano Iniciante -->
+            <div data-plan="iniciante" class="plan-card cursor-pointer rounded-xl p-4 border border-slate-700 bg-slate-950/60 hover:border-emerald-500/50 transition flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-extrabold text-slate-200 text-sm">Iniciante (ASE)</span>
+                  <span class="plan-status-badge text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">20 Diagnósticos/mês</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Ideal para perito autônomo. 1 camada por vez, buffer até 5 km, laudos em PDF e histórico por 90 dias.</p>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                <span class="text-slate-400">R$ 149/mês &bull; 1 Usuário</span>
+                <span class="plan-select-label text-emerald-400 font-bold">Selecionar</span>
+              </div>
+            </div>
+
+            <!-- Plano Profissional ⭐ O Campeão -->
+            <div data-plan="profissional" class="plan-card cursor-pointer rounded-xl p-4 border-2 border-emerald-500 bg-emerald-500/10 transition flex flex-col justify-between relative shadow-lg shadow-emerald-950/30">
+              <div class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] uppercase tracking-wider">
+                ⭐ O Campeão
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-extrabold text-white text-sm">Profissional (ASE)</span>
+                  <span class="plan-status-badge text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500 text-slate-950">60 Diagnósticos/mês</span>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">Buffer regulatório até 10 km, <strong>Logo personalizável</strong> no laudo, Portal do Cliente com Link/PIN e histórico permanente.</p>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[11px]">
+                <span class="text-emerald-400 font-bold">R$ 297/mês &bull; Até 3 Usuários</span>
+                <span class="plan-select-label text-emerald-400 font-bold">Plano Ativo ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quota Usage Progress Bar (out of 20 projects) -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1 flex-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i> Franquia de Projetos Cadastrados na Assinatura
+              </span>
+              <span id="hub-quota-text" class="font-mono font-bold text-[#00A0FF]">—</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="hub-quota-bar" class="bg-gradient-to-r from-[#00A0FF] to-[#008ee0] h-full rounded-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-400 sm:border-l sm:border-slate-800 sm:pl-4 max-w-xs">
+            Resp. Técnico vinculado aos Laudos:<br/>
+            <strong id="hub-rt-display" class="text-slate-200">—</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 1: CONSULTANCY BRAND CUSTOMIZER (WITH LOGO UPLOAD) ==================== -->
+  <div id="modal-whitelabel" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-[#00A0FF]/15 text-[#00A0FF]">
+            <i data-lucide="palette" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Marca Própria da Consultoria</h3>
+            <p class="text-xs text-slate-400">Personalize a logomarca e os dados que aparecem para o seu cliente</p>
+          </div>
+        </div>
+        <button id="btn-close-whitelabel" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Logo Upload Option -->
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1.5">Logomarca da Consultoria (PNG / JPG / SVG)</label>
+          <div class="flex items-center gap-3">
+            <label for="wl-logo-upload" class="cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[#00A0FF] font-semibold transition">
+              <i data-lucide="image-plus" class="w-4 h-4"></i> Escolher Imagem da Logo
+              <input id="wl-logo-upload" type="file" accept="image/*" class="hidden" />
+            </label>
+            <button id="btn-reset-logo" class="text-slate-400 hover:text-slate-200 underline text-[11px]">Usar ícone padrão</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Nome da Empresa de Consultoria</label>
+          <input id="wl-company-name" type="text" value="VerdeVivo Consultoria & Engenharia Ambiental" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Slogan / Especialidade no Cabeçalho</label>
+          <input id="wl-company-slogan" type="text" value="Ampliando a Visão do seu Negócio" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Responsável Técnico (CREA / CRBio / CFT)</label>
+          <input id="wl-rt-name" type="text" value="Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-wl-reset-to-default" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5 cursor-pointer" title="Restaurar padrÃ£o PANORAMA GIS"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i><span>Restaurar PadrÃ£o</span></button>
+        <button id="btn-save-whitelabel" class="btn-ase-primary px-4 py-2 rounded-lg text-xs font-semibold">
+          Salvar Marca da Consultoria
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: PRINTABLE TECHNICAL REPORT (LAUDO PDF) ==================== -->
+  
+  <!-- ==================== MODAL: EXPORTAR PACOTE DE CAMADAS (KML/SHP) ==================== -->
+  <div id="modal-download-layers" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-5 h-5 text-emerald-400"></i> Baixar Camadas do Projeto
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">SIRGAS 2000 • Injeção automática com buffer e feições recortadas</p>
+        </div>
+        <button id="btn-close-download-layers" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Preview of Layers Injected -->
+      <div class="bg-[#1E293B] rounded-xl p-3.5 border border-white/[0.08] space-y-2.5 text-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Camadas Injetadas no Pacote:</span>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-sky-400 shrink-0"></span> Empreendimento:</span>
+            <span id="export-summary-proj" class="font-mono text-slate-300 font-semibold truncate max-w-[220px]">—</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-rose-500/80 shrink-0"></span> Raio de Análise:</span>
+            <span id="export-summary-buffer" class="font-mono text-amber-300 font-semibold">—</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span> Feições Recortadas:</span>
+            <span id="export-summary-clipped" class="font-mono text-emerald-400 font-semibold">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format Selection Buttons -->
+      <div class="space-y-2.5 pt-1">
+        <button id="btn-export-kml-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <i data-lucide="globe" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white flex items-center gap-2">
+                Pacote Completo KML (.kml)
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-semibold">Recomendado</span>
+              </div>
+              <div class="text-[11px] text-slate-400">Pastas separadas (Empreendimento, Buffer, RestriÃ§Ãµes) para Google Earth & QGIS</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button id="btn-export-shp-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-sky-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-sky-500/15 text-sky-400 border border-sky-500/30">
+              <i data-lucide="archive" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">Shapefile Compactado (.zip)</div>
+              <div class="text-[11px] text-slate-400">Arquivos vetoriais (.shp, .shx, .dbf, .prj) com tabela de atributos para SIG</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button id="btn-export-geojson-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-purple-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/30">
+              <i data-lucide="code-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">GeoJSON Geoespacial (.geojson)</div>
+              <div class="text-[11px] text-slate-400">FeatureCollection padronizada para QGIS, ArcGIS e geoprocessamento</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="modal-report" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white text-slate-900 rounded-2xl max-w-3xl w-full p-8 shadow-2xl my-8 space-y-6 relative" id="printable-report-area">
+      <!-- Non-printable top action bar -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-4 no-print">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#008ee0] bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+          Pré-visualização do Laudo Técnico Automatizado
+        </span>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00A0FF] hover:bg-[#008ee0] text-white text-xs font-bold shadow transition">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / Salvar PDF
+          </button>
+          <button id="btn-close-report" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+            Fechar
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Header -->
+      <div class="flex items-start justify-between border-b-2 border-slate-900 pb-5">
+        <div>
+          <p id="report-consultancy-name" class="text-sm font-extrabold uppercase tracking-wider text-[#008ee0]">VerdeVivo Consultoria & Engenharia Ambiental</p>
+          <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Relatório de Triagem e Viabilidade Socioambiental</h1>
+          <p id="report-rt-info" class="text-xs text-slate-500 mt-1">Resp. Técnico: Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D</p>
+        </div>
+        <div class="text-right text-xs text-slate-500 font-mono">
+          <div>Gerado via <strong>Panorama GIS</strong></div>
+          <div class="text-[10px] text-slate-400">Ampliando a Visão do seu Negócio</div>
+          <div id="report-date">Data: 20/10/2026</div>
+        </div>
+      </div>
+
+      <!-- Property Info Table -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+        <div>
+          <span class="text-slate-500 block">Empreendimento / Imóvel</span>
+          <strong id="report-prop-name" class="text-slate-900 text-sm">—</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Município / Bioma</span>
+          <strong id="report-prop-loc" class="text-slate-900">—</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Área Calculada</span>
+          <strong id="report-prop-area" class="text-slate-900 font-mono">1.428,5 ha</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Interessado / Cliente</span>
+          <strong id="report-client-name" class="text-slate-900">—</strong>
+        </div>
+      </div>
+
+      <!-- Crossing Table -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Quadro Síntese de Cruzamento Espacial (Bases Oficiais)</h3>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 border-y border-slate-300">
+              <th class="py-2.5 px-3 font-bold">Base Oficial / Órgão</th>
+              <th class="py-2.5 px-3 font-bold">Fonte / Atualização</th>
+              <th class="py-2.5 px-3 font-bold">Resultado na Área</th>
+              <th class="py-2.5 px-3 font-bold text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="report-table-body" class="divide-y divide-slate-200">
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Conclusion Box -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Parecer Técnico Preliminar</h4>
+        <p id="report-conclusion-text" class="text-xs text-slate-700 leading-relaxed"></p>
+      </div>
+
+      <!-- Signature Footer -->
+      <div class="pt-6 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+        <div>Documento gerado eletronicamente com coordenadas aferidas no sistema geodésico SIRGAS 2000.</div>
+        <div class="font-mono">Autenticação: #PGIS-2026-9941A</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NEW MODAL 3: SAAS PROVIDER MASTER ADMIN PANEL (FOR RODRIGO) ==================== -->
+  <div id="modal-provider-admin" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-amber-500/40 rounded-2xl max-w-6xl w-full p-6 shadow-2xl space-y-6 my-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h3 class="text-lg font-extrabold text-white">Painel Master do Provedor — Panorama GIS</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                Sigilo LGPD Ativo (Sem acesso aos mapas privados das consultorias)
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">Gerencie as empresas assinantes, planos contratados, consumo de franquia, acessos simultâneos e a saúde das fontes oficiais.</p>
+          </div>
+        </div>
+        <button id="btn-close-provider-admin" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Provider Business KPIs (MRR, Active Consultancies, Total Projects Quota, Server Status) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Receita Recorrente Mensal (MRR)</span>
+            <i data-lucide="dollar-sign" class="w-4 h-4 text-[#00A0FF]"></i>
+          </div>
+          <div id="admin-kpi-mrr" class="text-xl font-extrabold font-mono text-[#00A0FF]">—</div>
+          <div id="admin-kpi-arr" class="text-[11px] text-slate-500 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Consultorias Assinantes</span>
+            <i data-lucide="building-2" class="w-4 h-4 text-[#00A0FF]"></i>
+          </div>
+          <div id="admin-kpi-tenants" class="text-xl font-extrabold font-mono text-white">—</div>
+          <div id="admin-kpi-tenants-detail" class="text-[11px] text-slate-400 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Consumo Global de Projetos</span>
+            <i data-lucide="hard-drive" class="w-4 h-4 text-sky-400"></i>
+          </div>
+          <div id="admin-kpi-projects" class="text-xl font-extrabold font-mono text-white">—</div>
+          <div id="admin-kpi-seats" class="text-[11px] text-slate-400 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Bases Nacionais (IBAMA/ICMBio/INCRA)</span>
+            <i data-lucide="database" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div id="admin-kpi-sources" class="text-sm font-bold text-slate-300 flex items-center gap-1.5 mt-1">Não verificado</div>
+          <button id="btn-check-sources" class="text-[11px] text-amber-300 hover:underline mt-1.5">Verificar fontes agora</button>
+          <div id="admin-kpi-sources-detail" class="text-[10px] text-slate-500 mt-1"></div>
+        </div>
+      </div>
+
+      <!-- Onboard New Consultancy Form -->
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-4 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+          <i data-lucide="plus-square" class="w-4 h-4"></i> Cadastrar Nova Empresa de Consultoria Assinante (Seu Cliente B2B)
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+          <div class="sm:col-span-3">
+            <label class="text-slate-300 font-semibold block mb-1">Nome da Consultoria</label>
+            <input id="admin-new-cons-name" type="text" placeholder="Ex: Cerrado Geo Consultoria" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">CNPJ</label>
+            <input id="admin-new-cons-cnpj" type="text" placeholder="00.000.000/0001-00" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-3">
+            <label class="text-slate-300 font-semibold block mb-1">E-mail / Responsável</label>
+            <input id="admin-new-cons-email" type="text" placeholder="contato@cerradogeo.com.br" class="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">Plano Contratado</label>
+            <select id="admin-new-cons-plan" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-2.5 py-2 text-slate-100 font-semibold focus:outline-none focus:border-amber-500">
+              <option value="essencial">Essencial (5 Proj. - R$ 290)</option>
+              <option value="profissional" selected>Profissional (20 Proj. - R$ 590)</option>
+              <option value="corporativo">Corporativo (Ilim. - R$ 990)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 flex items-end">
+            <button id="btn-admin-add-consultancy" class="w-full py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold flex items-center justify-center gap-1.5 transition shadow-lg">
+              <i data-lucide="key" class="w-4 h-4"></i> Liberar Acesso
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consultancies Control Table (Zero private client/map data exposed, only commercial & quota control) -->
+      <div>
+        <div class="flex items-center justify-between mb-2.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Carteira de Empresas de Consultoria Assinantes</h4>
+          <span class="text-[11px] text-slate-400">Controle de planos, consumo de franquia, mensalidade e bloqueio/liberação de acesso</span>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-800 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-800/90 text-slate-300 border-b border-slate-700">
+                <th class="py-3 px-4 font-bold">Empresa de Consultoria / CNPJ</th>
+                <th class="py-3 px-4 font-bold">Contato / Login Admin</th>
+                <th class="py-3 px-4 font-bold">Plano Contratado</th>
+                <th class="py-3 px-4 font-bold">Uso da Franquia (Sigiloso)</th>
+                <th class="py-3 px-4 font-bold">Mensalidade / Venc.</th>
+                <th class="py-3 px-4 font-bold">Status</th>
+                <th class="py-3 px-4 font-bold text-right">Controle do Provedor</th>
+              </tr>
+            </thead>
+            <tbody id="provider-admin-tbody" class="divide-y divide-slate-800 bg-[#243545]/60">
+              <!-- Populated dynamically by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-[#0F172A] border border-emerald-500/40 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs font-medium">
+    <i data-lucide="check-circle" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+    <span id="toast-message">Ação concluída com sucesso!</span>
+  </div>
+
+  <!-- Supabase (login, perfis, planos, projetos) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script charset="UTF-8" src="config.js"></script>
+  <!-- Camadas oficiais ao vivo (WMS/WFS direto dos órgãos) -->
+  <script charset="UTF-8" src="govlayers.js"></script>
+  <!-- Lógica do app -->
+  <script charset="UTF-8" src="app.js"></script>
+
+  <!-- ==================== SECURITY LOCK OVERLAY (DesautenticaÃ§Ã£o na Tela Inicial) ==================== -->
+  <div id="ase-security-lock-overlay" class="hidden fixed inset-0 z-[9999] bg-[#0f172a]/95 backdrop-blur-md flex items-center justify-center p-6 text-center select-none animate-fadeIn">
+    <div class="max-w-md w-full bg-[#1e293b] border-2 border-[#00A0FF]/60 rounded-3xl p-8 shadow-2xl space-y-5">
+      <div class="w-16 h-16 rounded-2xl bg-[#00A0FF]/20 border border-[#00A0FF]/50 text-[#0094e8] flex items-center justify-center mx-auto shadow-lg shadow-[#00A0FF]/20">
+        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+      </div>
+      <div class="space-y-2">
+        <h3 class="text-xl font-black text-white tracking-tight">SessÃ£o Encerrada na Tela Inicial</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          A autenticaÃ§Ã£o do <strong>PANORAMA GIS</strong> foi encerrada na tela inicial. Por motivos de conformidade e seguranÃ§a da informaÃ§Ã£o tÃ©cnica, esta guia da SoluÃ§Ã£o ASE deixou de operar.
+        </p>
+      </div>
+      <div class="pt-2">
+        <a href="index.html" class="w-full py-3.5 px-6 rounded-xl bg-[#00A0FF] hover:bg-[#008ee0] text-white font-extrabold text-xs shadow-xl shadow-[#00A0FF]/40 flex items-center justify-center gap-2 transition cursor-pointer">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>Voltar ao Portal e Reconectar</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // InicializaÃ§Ã£o direta do ASE (sem tela de login ou landing overlay)
+    window.addEventListener('DOMContentLoaded', () => {
+      // Verifica se hÃ¡ sessÃ£o ativa
+      const session = localStorage.getItem('panorama_session');
+      if (!session) {
+        document.getElementById('ase-security-lock-overlay')?.classList.remove('hidden');
+      } else {
+        // Se houver sandbox ou app, inicializa direto
+        if (window.enterSandboxMode) {
+          window.enterSandboxMode();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+

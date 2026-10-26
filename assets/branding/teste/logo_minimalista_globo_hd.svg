@@ -1,0 +1,36 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <clipPath id="globe-clip">
+      <circle cx="500" cy="500" r="485" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#globe-clip)">
+    <!-- 1. Globe Background (Green) -->
+    <circle cx="500" cy="500" r="485" fill="#0B8343" />
+
+    <!-- 2. Eye Interior Fill (Clean Blue) -->
+    <path d="M 25 500 C 280 362, 720 362, 975 500 C 720 638, 280 638, 25 500 Z" fill="#0087D1" />
+
+    <!-- 3. WHITE GRID LINES -->
+
+    <!-- 3.1 Central Vertical Meridian (Seamlessly enters into eyelid stroke) -->
+    <line x1="500" y1="-10" x2="500" y2="402" stroke="#FFFFFF" stroke-width="38" stroke-linecap="butt" />
+    <line x1="500" y1="598" x2="500" y2="1010" stroke="#FFFFFF" stroke-width="38" stroke-linecap="butt" />
+
+    <!-- 3.2 Northern Parallel Line -->
+    <path d="M -30 430 C 300 245, 700 245, 1030 430" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linecap="round" />
+
+    <!-- 3.3 Southern Parallel Line -->
+    <path d="M -30 570 C 300 755, 700 755, 1030 570" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linecap="round" />
+
+    <!-- 3.4 CÃ­rculo Maior IntermediÃ¡rio -->
+    <circle cx="500" cy="500" r="270" fill="none" stroke="#FFFFFF" stroke-width="38" />
+
+    <!-- 3.5 Eye Contours (Upper & Lower Eyelids) -->
+    <path d="M 25 500 C 280 362, 720 362, 975 500 C 720 638, 280 638, 25 500 Z" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linejoin="round" />
+
+    <!-- 3.6 CÃ­rculo Menor / Pupila -->
+    <circle cx="500" cy="500" r="98" fill="#0087D1" stroke="#FFFFFF" stroke-width="38" />
+  </g>
+</svg>

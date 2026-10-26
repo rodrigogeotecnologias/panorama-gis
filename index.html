@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panorama GIS — Ampliando a Visão do seu Negócio</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+          teal: {
+            50: '#edf7fc',
+            100: '#d7eff9',
+            200: '#b4e1f4',
+            300: '#80d0ff',
+            400: '#00A0FF',
+            500: '#00A0FF',
+            600: '#008ee0',
+            700: '#007acc',
+            800: '#00629b',
+            900: '#003350',
+            950: '#001e30',
+          },
+          emerald: {
+            50: '#edf7fc',
+            100: '#d7eff9',
+            200: '#b4e1f4',
+            300: '#80d0ff',
+            400: '#00A0FF',
+            500: '#00A0FF',
+            600: '#008ee0',
+            700: '#007acc',
+            800: '#00629b',
+            900: '#003350',
+            950: '#001e30',
+          }
+          }
+        }
+      }
+    }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Turf.js for instant geospatial area, perimeter & intersection calculations -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <!-- shpjs for reading Shapefile (.zip / .shp) directly in the browser -->
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+  <script src="https://unpkg.com/@mapbox/shp-write@0.4.3/shpwrite.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-hidden select-none">
+
+  <!-- ==================== LANDING PAGE OVERLAY (SISGIM-STYLE FOR PANORAMA GIS) ==================== -->
+  <!-- ==================== LANDING PAGE OVERLAY (GISCARTA-INSPIRED MODERN LAYOUT FOR PANORAMA GIS) ==================== -->
+  <!-- ==================== LANDING PAGE OVERLAY (GISCARTA-INSPIRED MODERN LAYOUT FOR PANORAMA GIS) ==================== -->
+  <!-- ==================== LANDING PAGE OVERLAY (GISCARTA VISUAL IDENTITY & MULTI-PAGE SYSTEM) ==================== -->
+  <div id="landing-page-view" class="fixed inset-0 bg-[#234066] text-slate-100 z-50 overflow-y-auto custom-scrollbar select-text font-sans">
+    <!-- GISCARTA Ambient Radial Glows (Exact Petroleum Blue & Soft Periwinkle/Teal Diffusions) -->
+    <div class="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#2d5282]/40 rounded-full blur-[150px]"></div>
+    <div class="pointer-events-none fixed top-1/3 -right-40 w-[600px] h-[600px] bg-[#00A0FF]/10 rounded-full blur-[180px]"></div>
+    <div class="pointer-events-none fixed bottom-10 -left-40 w-[550px] h-[550px] bg-[#00A0FF]/10 rounded-full blur-[160px]"></div>
+
+    <!-- Modern Top Navbar (GISCARTA Style: Deep Blue #243f64 with Clean Active Indicators) -->
+    <nav class="w-full border-b border-[#35598a]/70 bg-[#234066]/95 backdrop-blur-xl sticky top-0 z-40 transition-all shadow-md">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <!-- Logo & Brand Lockup with Updated Emblem -->
+        <a href="javascript:void(0)" onclick="window.showLandingPage('page-solucoes')" class="flex items-center gap-3.5 group cursor-pointer">
+          <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Emblema PANORAMA GIS" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+          <div class="flex flex-col justify-center">
+            <span class="font-black text-xl tracking-tight text-white leading-none">PANORAMA <span class="text-[#00A0FF]">GIS</span></span>
+            <span class="text-[11px] text-[#9bb3d3] font-medium tracking-wide mt-1">Ampliando a Vis&#227;o do seu Neg&#243;cio</span>
+          </div>
+        </a>
+
+        <!-- Navigation Links: Clean & Elegant Floating Menu (Sem caixa azul escura) -->
+                <div class="hidden lg:flex items-center gap-8 sm:gap-9">
+          <button id="nav-link-solucoes" onclick="window.showLandingPage('page-solucoes')" class="nav-saas-item active">
+            <span>Solu&#231;&#227;o</span>
+          </button>
+          <button id="nav-link-vantagens" onclick="window.showLandingPage('page-vantagens')" class="nav-saas-item">
+            <span>Vantagens</span>
+          </button>
+          <button id="nav-link-produtos" onclick="window.showLandingPage('page-produtos')" class="nav-saas-item">
+            <span>Produtos</span>
+          </button>
+          <button id="nav-link-planos" onclick="window.showLandingPage('page-planos')" class="nav-saas-item">
+            <span>Planos</span>
+          </button>
+          <button id="nav-link-cliente" onclick="window.showLandingPage('page-cliente')" class="hidden nav-client-pill">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-[#0EA5E9]"></i>
+            <span>&#193;rea do Cliente</span>
+          </button>
+        </div>
+
+        <!-- Action CTAs: Quando deslogado -> Botão Entrar Azul ArcGIS. Quando logado -> Perfil + Sair -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="login.html" id="btn-landing-login-main" class="btn-panorama-page px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm">
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span>Entrar</span>
+          </a>
+
+          <!-- Bloco do Usuário Conectado -->
+          <div id="landing-user-profile-widget" class="hidden flex items-center gap-2">
+            <button onclick="window.showLandingPage('page-cliente')" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#1d3554]/90 border border-[#35598a] hover:border-[#00A0FF] text-xs font-semibold text-white transition cursor-pointer">
+              <div class="w-7 h-7 rounded-full bg-[#00A0FF] text-white flex items-center justify-center font-bold text-xs" id="landing-user-avatar">
+                RV
+              </div>
+              <span id="landing-user-display-name" class="font-bold text-slate-100 max-w-[90px] sm:max-w-[130px] truncate">Rodrigo</span>
+            </button>
+            <button id="btn-landing-top-logout" onclick="window.handleLandingLogout()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Desconectar">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Sair</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer / Sub-bar with smooth horizontal scroll and clear targets -->
+      <div class="lg:hidden flex items-center justify-between px-3 py-2 border-t border-[#35598a]/50 bg-[#1b3353] text-xs overflow-x-auto custom-scrollbar gap-2">
+        <button onclick="window.showLandingPage('page-solucoes')" class="px-2.5 py-1.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-[#00A0FF] font-semibold whitespace-nowrap min-h-[38px]">Soluções</button>
+        <button onclick="window.showLandingPage('page-vantagens')" class="px-2.5 py-1.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-[#00A0FF] font-semibold whitespace-nowrap min-h-[38px]">Vantagens</button>
+        <button onclick="window.showLandingPage('page-produtos')" class="px-2.5 py-1.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-[#00A0FF] font-semibold whitespace-nowrap min-h-[38px]">Produtos (ASE)</button>
+        <button onclick="window.showLandingPage('page-planos')" class="px-2.5 py-1.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-[#00A0FF] font-semibold whitespace-nowrap min-h-[38px]">Planos</button>
+      </div>
+</nav>
+
+    <!-- ==================== PÁGINA 1: SOLUÇÃO (HERO & SHOWCASE DA PLATAFORMA) ==================== -->
+    <div id="page-solucoes" class="landing-page-content max-w-7xl mx-auto px-6 pt-12 pb-20 relative z-10 text-center animate-fadeIn">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1b3353] border border-[#35598a] text-xs text-[#a0c2e8] font-semibold mb-6 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-pulse"></span>
+        <span>A intelig&#234;ncia territorial automatizada para equipes que exigem agilidade e precis&#227;o</span>
+      </div>
+
+      <!-- Main Headline (GISCARTA Format) -->
+      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12] text-white max-w-5xl mx-auto">
+        An&#225;lise geoespacial de alta precis&#227;o: <br class="hidden sm:inline" />
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#7eceec] to-[#00A0FF]">de horas no GIS desktop para segundos na nuvem</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="mt-6 text-sm sm:text-base text-[#cfdeef] leading-relaxed max-w-3xl mx-auto font-normal">
+        O <strong>PANORAMA GIS</strong> é a plataforma de análises geoespaciais que combina agilidade comercial com rigor geodésico oficial. AtÃ©ravés do seu produto <strong>ASE (Análise Socioambiental Expedita)</strong>, cruze qualquer gleba rural instantaneamente contra SIGEF/INCRA, CAR Federal, FUNAI, IBAMA, ICMBio, CANIE e IPHAN. Emita laudos periciais com a marca da sua consultoria e ART.
+      </p>
+
+      <!-- CTA Buttons GISCARTA Format: Purple/Periwinkle primary (#00A0FF) + Slate outline secondary -->
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="signup.html" target="_blank" id="btn-landing-trial-hero" class="btn-panorama-page w-full sm:w-auto px-8 py-3.5 text-sm">
+          <span>Comece gratuitamente</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        <button onclick="if(window.enterSandboxMode){window.enterSandboxMode();}else{document.getElementById('landing-page-view')?.classList.add('hidden');}" class="btn-panorama-page-secondary w-full sm:w-auto px-6 py-3.5 text-sm">
+          <i data-lucide="play" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span>Explorar mapa interativo</span>
+        </button>
+      </div>
+
+      <!-- Micro-Trust Bar -->
+      <p class="mt-4 text-xs text-[#9bb3d3]">Sem cartão de crédito. Sem necessidade de instalar softwares pesados de SIG.</p>
+
+      <!-- App Mockup Window (GISCARTA Showcase in Blue Tone) -->
+      <div class="mt-12 relative max-w-5xl mx-auto rounded-2xl p-1 bg-gradient-to-b from-[#3d6599] via-[#2a4973] to-[#1c3352] shadow-[0_25px_70px_rgba(15,28,48,0.9)] border border-[#3d6599]/80">
+        <div class="bg-[#182c46] rounded-xl overflow-hidden border border-[#2e4f7a] text-left">
+          <!-- Window Header / Browser Bar -->
+          <div class="h-10 bg-[#14253b] border-b border-[#2a476d] px-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-[#00A0FF]"></span>
+              <span class="ml-3 text-[11px] font-mono text-[#a0c2e8] flex items-center gap-1.5 bg-[#0f1d2e] px-3 py-0.5 rounded-md border border-[#2a476d]">
+                <i data-lucide="lock" class="w-3 h-3 text-[#00A0FF]"></i>
+                https://panorama.gis.br/analise/gleba-santa-maria-mt
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-[#a0c2e8] font-mono">
+              <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-ping"></span>
+              <span>Bases Federativas Conectadas</span>
+            </div>
+          </div>
+
+          <!-- Window Inner Simulated Layout -->
+          <div class="relative grid grid-cols-12 h-[420px] bg-[#122237] overflow-hidden select-none">
+            <!-- Left Layers Control Mockup -->
+            <div class="col-span-3 bg-[#15273e] border-r border-[#264165] p-3.5 space-y-3 hidden sm:block">
+              <div class="flex items-center justify-between pb-2 border-b border-[#264165]">
+                <span class="text-[11px] font-extrabold uppercase text-[#9bb3d3] tracking-wider">Camadas Oficiais</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] font-bold">8 Conectadas</span>
+              </div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between p-2 rounded-lg bg-[#1a3852] border border-[#00A0FF]/40 text-[#7eceec]">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+                    <span class="font-semibold text-[11px]">INCRA - SIGEF</span>
+                  </div>
+                  <span class="text-[10px] text-[#9bb3d3]">0 Sobr.</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-lg bg-[#1a3852] border border-[#00A0FF]/40 text-[#7eceec]">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+                    <span class="font-semibold text-[11px]">CAR Federal (SICAR)</span>
+                  </div>
+                  <span class="text-[10px] text-[#9bb3d3]">AtÃ©ivo</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-lg bg-[#182c44] border border-[#264165] text-[#cfdeef]">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#a855f7]"></span>
+                    <span class="font-semibold text-[11px]">FUNAI - Terras Indíg.</span>
+                  </div>
+                  <span class="text-[10px] text-[#00A0FF]">0 Sobr.</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-lg bg-[#182c44] border border-[#264165] text-[#cfdeef]">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+                    <span class="font-semibold text-[11px]">IBAMA - Embargos</span>
+                  </div>
+                  <span class="text-[10px] text-[#00A0FF]">Livre</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-lg bg-[#182c44] border border-[#264165] text-[#cfdeef]">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+                    <span class="font-semibold text-[11px]">ICMBio - UCs</span>
+                  </div>
+                  <span class="text-[10px] text-[#00A0FF]">Livre</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center Interactive Map Area Mockup -->
+            <div class="col-span-12 sm:col-span-6 relative bg-[#0e1b2c] flex items-center justify-center overflow-hidden">
+              <div class="absolute inset-0 bg-[radial-gradient(#254166_1px,transparent_1px)] [background-size:16px_16px] opacity-70"></div>
+              
+              <svg class="absolute inset-0 w-full h-full opacity-70" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Watercourse -->
+                <path d="M-20 80 C 100 120, 220 60, 320 180 C 380 250, 450 280, 520 300" stroke="#00A0FF" stroke-width="4" stroke-dasharray="8 4" opacity="0.6" />
+                <path d="M-20 80 C 100 120, 220 60, 320 180 C 380 250, 450 280, 520 300" stroke="#00A0FF" stroke-width="1.5" />
+                
+                <!-- Buffer / Area Protegida -->
+                <polygon points="340,40 480,20 460,140 320,110" fill="rgba(0, 160, 255, 0.15)" stroke="#00A0FF" stroke-width="1.5" stroke-dasharray="4 4" />
+                <text x="350" y="85" fill="#80d0ff" font-size="10" font-family="sans-serif" font-weight="bold">Zona de Amortecimento UC</text>
+
+                <!-- Gleba Polygon Under Analysis -->
+                <polygon points="120,110 280,90 310,240 180,270 90,200" fill="rgba(33, 182, 111, 0.25)" stroke="#00A0FF" stroke-width="2.5" />
+                <circle cx="120" cy="110" r="4" fill="#00A0FF" />
+                <circle cx="280" cy="90" r="4" fill="#00A0FF" />
+                <circle cx="310" cy="240" r="4" fill="#00A0FF" />
+                <circle cx="180" cy="270" r="4" fill="#00A0FF" />
+                <circle cx="90" cy="200" r="4" fill="#00A0FF" />
+              </svg>
+
+              <!-- On-Map Floating Property Card -->
+              <div class="relative z-10 p-3.5 rounded-xl bg-[#162a42]/95 border border-[#00A0FF]/60 backdrop-blur-md shadow-2xl max-w-xs text-center space-y-1.5">
+                <div class="flex items-center justify-center gap-1.5 text-[#00A0FF] font-extrabold text-xs">
+                  <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                  <span>Gleba Santa Maria — 1.428,50 ha</span>
+                </div>
+                <p class="text-[11px] text-[#cfdeef]">Sorriso / MT • SIRGAS 2000 UTM 21S</p>
+                <div class="inline-block px-2.5 py-0.5 rounded-full bg-[#00A0FF] text-white font-extrabold text-[10px] tracking-wide">
+                  100% REGULAR • SEM SOBREPOSIÇÕES
+                </div>
+              </div>
+
+              <div class="absolute bottom-3 left-3 bg-[#112136]/90 backdrop-blur border border-[#264165] px-2.5 py-1 rounded text-[10px] text-[#9bb3d3] font-mono">
+                EPSG: 4674 (SIRGAS 2000)
+              </div>
+            </div>
+
+            <!-- Right Diagnosis & Action Mockup -->
+            <div class="col-span-3 bg-[#15273e] border-l border-[#264165] p-3.5 space-y-3.5 hidden sm:block">
+              <div class="flex items-center justify-between pb-2 border-b border-[#264165]">
+                <span class="text-[11px] font-extrabold uppercase text-[#9bb3d3] tracking-wider">Diagnóstico Auto</span>
+                <span class="text-[10px] text-[#00A0FF] font-mono">0.94 seg</span>
+              </div>
+
+              <div class="space-y-2 text-xs">
+                <div class="p-2.5 rounded-lg bg-[#0f1d2e] border border-[#264165]">
+                  <div class="text-[10px] text-[#9bb3d3]">Sobreposição Restritiva</div>
+                  <div class="text-sm font-black text-[#00A0FF]">0.00 ha (0.0%)</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#0f1d2e] border border-[#264165]">
+                  <div class="text-[10px] text-[#9bb3d3]">Risco Jurídico</div>
+                  <div class="text-xs font-bold text-[#7eceec] flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span> Baixo / Apto para Licença
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#0f1d2e] border border-[#264165]">
+                  <div class="text-[10px] text-[#9bb3d3]">ART / Responsável</div>
+                  <div class="text-xs font-medium text-slate-200">Eng. Agrônomo • CREA/MT</div>
+                </div>
+              </div>
+
+              <button class="btn-panorama-page w-full py-2.5 text-[11px]">
+                <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+                <span>Emitir Laudo PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden lg:flex items-center gap-2 absolute -top-5 -right-4 bg-[#1b3353] border border-[#00A0FF]/50 rounded-xl px-4 py-2 shadow-2xl backdrop-blur-md">
+          <i data-lucide="zap" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span class="text-xs font-bold text-white">Triagem Concluída em 1.4s</span>
+        </div>
+
+        <div class="hidden lg:flex items-center gap-2 absolute -bottom-5 -left-4 bg-[#1b3353] border border-[#00A0FF]/50 rounded-xl px-4 py-2 shadow-2xl backdrop-blur-md">
+          <i data-lucide="shield-check" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span class="text-xs font-bold text-slate-200">Laudo Técnico White-Label com ART</span>
+        </div>
+      </div>
+
+      <!-- Bottom Next Page Navigation Link -->
+      <div class="mt-12 flex justify-center">
+        <button onclick="window.showLandingPage('page-vantagens')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <span>Ver Vantagens da Plataforma</span>
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== PÁGINA 2: VANTAGENS (GRID 4x2) ==================== -->
+    <div id="page-vantagens" class="landing-page-content hidden max-w-7xl mx-auto px-6 py-16 relative z-10 animate-fadeIn">
+      <div class="text-center max-w-3xl mx-auto space-y-3 mb-14">
+        <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-white">
+          Por que consultorias e peritos escolhem o PANORAMA GIS
+        </h2>
+        <p class="text-sm text-[#cfdeef]">
+          A combina&#231;&#227;o perfeita entre velocidade comercial para fechar propostas e rigor cartogr&#225;fico.
+        </p>
+      </div>
+
+      <!-- 8 Feature Cards with Green Checkmarks -->
+      <!-- 3 Cards de Retorno & Economia de Recursos (Essencia Integrada) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
+        <!-- Card 1: Menos Tempo -->
+        <div class="p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] space-y-4 shadow-xl hover:border-[#00A0FF]/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-[#00A0FF]/20 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF]">
+            <i data-lucide="clock-4" class="w-6 h-6"></i>
+          </div>
+          <div class="text-3xl sm:text-4xl font-black text-white tracking-tight">Menos <span class="text-[#00A0FF]">Tempo</span></div>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Elimine o tempo gasto baixando dezenas de shapefiles pesados de portais diferentes, convertendo proje&#231;&#245;es e recortando pol&#237;gonos manualmente.
+          </p>
+        </div>
+
+        <!-- Card 2: Zero ComplicaÃ§Ãµes -->
+        <div class="p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] space-y-4 shadow-xl hover:border-[#00A0FF]/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-[#00A0FF]/20 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF]">
+            <i data-lucide="check-check" class="w-6 h-6"></i>
+          </div>
+          <div class="text-3xl sm:text-4xl font-black text-white tracking-tight">Zero <span class="text-[#00A0FF]">Complica&#231;&#245;es</span></div>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Evite emitir laudos com bases desatualizadas salvas no computador. O PANORAMA GIS consome diretamente os webservices federativos oficiais.
+          </p>
+        </div>
+
+        <!-- Card 3: Mais Faturamento -->
+        <div class="p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] space-y-4 shadow-xl hover:border-[#00A0FF]/50 transition">
+          <div class="w-12 h-12 rounded-2xl bg-[#00A0FF]/20 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF]">
+            <i data-lucide="trending-up" class="w-6 h-6"></i>
+          </div>
+          <div class="text-3xl sm:text-4xl font-black text-white tracking-tight">Mais <span class="text-[#00A0FF]">Faturamento</span></div>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Aumente a velocidade de entrega de propostas e diagn&#243;sticos preliminares, fechando contratos antes que a concorr&#234;ncia consiga abrir o software GIS.
+          </p>
+        </div>
+      </div>
+
+      <div class="mb-6 flex items-center gap-2 text-white font-extrabold text-sm uppercase tracking-wider">
+        <i data-lucide="shield-check" class="w-4 h-4 text-[#00A0FF]"></i>
+        <span>Diferenciais T&#233;cnicos e Operacionais</span>
+      </div>
+
+      <!-- 8 Feature Cards with Green Checkmarks -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card 1 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Análise com 1 Clique</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Cruzamento automatizado contra bases geoespaciais restritivas em poucos segundos.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="globe" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Rigor Cartográfico</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Adoção do sistema geodésico de referência oficial do Brasil. Cálculo exato de áreas geodésicas sem distorções cartográficas.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Laudo PDF Personalizado</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Exporte relatórios técnicos formatados com a logomarca e número de ART/CREA da sua consultoria.
+          </p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Camadas em Tempo Real</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Conexão com webservices.
+          </p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="key" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Portal do seu Cliente com PIN</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Compartilhe o projeto com o empreendedor para aprovação remota transparente via código PIN seguro.
+          </p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Multi-Formato Sem Travas</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Importação e exportação direta de Shapefile (.zip), KML/KMZ do Google Earth e GeoJSON.
+          </p>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Auditoria & Rastreabilidade</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            Registro de data, hora, versões das bases governamentais e hash de validação para segurança pericial incontestável.
+          </p>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="p-6 rounded-2xl bg-[#1c3352]/90 border border-[#2e4f7a] hover:border-[#00A0FF]/60 transition-all group space-y-3 shadow-md">
+          <div class="w-9 h-9 rounded-xl bg-[#00A0FF]/15 border border-[#00A0FF]/40 flex items-center justify-center text-[#00A0FF] group-hover:scale-110 transition-transform">
+            <i data-lucide="cloud" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-[#00A0FF] transition-colors">Zero Instalação</h3>
+          <p class="text-xs text-[#cfdeef] leading-relaxed">
+            100% no navegador. Acesse do computador do escritório, do tablet na vistoria em campo ou do notebook em reuniões de negócios.
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation Footer for Page -->
+      <div class="mt-12 flex items-center justify-between pt-6 border-t border-[#35598a]/60">
+        <button onclick="window.showLandingPage('page-solucoes')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span>Voltar para Solu&#231;&#227;o</span>
+        </button>
+        <button onclick="window.showLandingPage('page-produtos')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <span>Ver Nossos Produtos</span>
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== PÁGINA 3: PRODUTOS & LAUDO (BENTO GRID) ==================== -->
+    <div id="page-produtos" class="landing-page-content hidden max-w-7xl mx-auto px-6 py-16 relative z-10 animate-fadeIn">
+      <!-- Sub-navegaÃ§Ã£o da PÃ¡gina PRODUTOS: SubpÃ¡gina ASE (AtÃ©ivo) e futuros produtos -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-6 border-b border-[#35598a]/60">
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-[#00A0FF] block mb-1">Ecossistema de Solu&#231;&#245;es PANORAMA</span>
+          <h1 class="text-xl sm:text-2xl font-black text-white">Produtos da Plataforma</h1>
+        </div>
+
+        
+      </div>
+
+      <!-- ConteÃºdo da SubpÃ¡gina: ASE - AnÃ¡lise Socioambiental Expedita -->
+      <div id="subpage-ase-content" class="space-y-12">
+        <div class="text-center max-w-3xl mx-auto space-y-3 mb-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00A0FF]/15 border border-[#00A0FF]/40 text-[#00A0FF] text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+            <span>Produto da Plataforma PANORAMA</span>
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-white">
+            ASE - An&#225;lise Socioambiental Expedita
+          </h2>
+          <p class="text-sm text-[#cfdeef]">
+            Tudo o que sua consultoria precisa para liderar o mercado. Entreg&#225;veis profissionais prontos para encantar seus clientes e atender exig&#234;ncias de bancos, cart&#243;rios e &#243;rg&#227;os ambientais.
+          </p>
+        </div>
+
+      <!-- Bento Grid Layout in Blue Tone -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Bento 1: Triagem Socioambiental Automatizada (8 cols) -->
+        <div class="lg:col-span-8 p-8 rounded-3xl bg-gradient-to-br from-[#1c3352] via-[#182c44] to-[#122237] border border-[#2e4f7a] flex flex-col justify-between relative overflow-hidden shadow-xl">
+          <div class="space-y-3 max-w-xl relative z-10">
+            <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00A0FF] bg-[#1a3852] px-3 py-1 rounded-lg border border-[#00A0FF]/40">
+              <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+              Mecanismo Cartográfico Turf.js
+            </div>
+            <h3 class="text-2xl font-black text-white">Triagem Socioambiental Automatizada</h3>
+            <p class="text-xs sm:text-sm text-[#cfdeef] leading-relaxed">
+              Importe o polígono da gleba e o PANORAMA GIS executa operações booleanas e de interseção espacial contra os 8 bancos de dados oficiais simultaneamente. O resultado aponta se há sobreposição, a área exata em hectares e o percentual de conformidade.
+            </p>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-[#2e4f7a] grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
+            <div class="p-3 rounded-xl bg-[#122237]/90 border border-[#2e4f7a]">
+              <span class="text-[10px] text-[#9bb3d3] block font-medium">INCRA SIGEF</span>
+              <span class="text-xs font-bold text-[#00A0FF] flex items-center gap-1 mt-0.5"><i data-lucide="check" class="w-3 h-3"></i> 0 Conflitos</span>
+            </div>
+            <div class="p-3 rounded-xl bg-[#122237]/90 border border-[#2e4f7a]">
+              <span class="text-[10px] text-[#9bb3d3] block font-medium">FUNAI TI</span>
+              <span class="text-xs font-bold text-[#00A0FF] flex items-center gap-1 mt-0.5"><i data-lucide="check" class="w-3 h-3"></i> Livre</span>
+            </div>
+            <div class="p-3 rounded-xl bg-[#122237]/90 border border-[#2e4f7a]">
+              <span class="text-[10px] text-[#9bb3d3] block font-medium">IBAMA Embargos</span>
+              <span class="text-xs font-bold text-[#00A0FF] flex items-center gap-1 mt-0.5"><i data-lucide="check" class="w-3 h-3"></i> Sem Autuação</span>
+            </div>
+            <div class="p-3 rounded-xl bg-[#122237]/90 border border-[#2e4f7a]">
+              <span class="text-[10px] text-[#9bb3d3] block font-medium">ICMBio UCs</span>
+              <span class="text-xs font-bold text-[#00A0FF] flex items-center gap-1 mt-0.5"><i data-lucide="check" class="w-3 h-3"></i> 0 Sobreposição</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento 2: Laudo Técnico PDF White-Label (4 cols) -->
+        <div class="lg:col-span-4 p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] flex flex-col justify-between relative shadow-xl hover:border-[#00A0FF]/50 transition">
+          <div class="space-y-3">
+            <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00A0FF] bg-[#1a3852] px-3 py-1 rounded-lg border border-[#00A0FF]/40">
+              <i data-lucide="award" class="w-3.5 h-3.5"></i>
+              White-Label Completo
+            </div>
+            <h3 class="text-xl font-black text-white">Laudo Pericial com sua Marca e ART</h3>
+            <p class="text-xs text-[#cfdeef] leading-relaxed">
+              O cliente final recebe um documento com a identidade visual da sua consultoria, mapa temático de situação, tabela de conformidade e termo de responsabilidade técnica assinado.
+            </p>
+          </div>
+
+          <div class="mt-6 p-4 rounded-xl bg-[#122237] border border-[#2e4f7a] space-y-2 text-xs">
+            <div class="flex items-center justify-between text-[#cfdeef]">
+              <span>Logomarca da Consultoria:</span>
+              <span class="text-[#00A0FF] font-bold">Personalizada</span>
+            </div>
+            <div class="flex items-center justify-between text-[#cfdeef]">
+              <span>Número de ART/CREA:</span>
+              <span class="text-white font-mono">Automático</span>
+            </div>
+            <div class="flex items-center justify-between text-[#cfdeef]">
+              <span>Validação Criptográfica:</span>
+              <span class="text-[#00A0FF] font-bold">SHA-256</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento 3: Portal do seu Cliente com PIN (4 cols) -->
+        <div class="lg:col-span-4 p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] flex flex-col justify-between relative shadow-xl hover:border-[#00A0FF]/50 transition">
+          <div class="space-y-3">
+            <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00A0FF] bg-[#1a2d48] px-3 py-1 rounded-lg border border-[#00A0FF]/40">
+              <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+              Aprovação Remota
+            </div>
+            <h3 class="text-xl font-black text-white">Portal do seu Cliente com PIN</h3>
+            <p class="text-xs text-[#cfdeef] leading-relaxed">
+              Envie um link seguro para o produtor rural ou investidor. Ele acessa com PIN exclusivo de 6 dígitos, visualiza a área no mapa e aprova ou solicita ajustes sem complicações.
+            </p>
+          </div>
+
+          <div class="mt-6 p-3.5 rounded-xl bg-[#122237] border border-[#00A0FF]/40 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="key-round" class="w-4 h-4 text-[#00A0FF]"></i>
+              <span class="text-xs font-mono font-bold text-[#80d0ff]">PIN: 849-201</span>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-[#00A0FF]/20 text-[#80d0ff] font-bold">AtÃ©ivo</span>
+          </div>
+        </div>
+
+        <!-- Bento 4: Hub da Consultoria Multi-Projetos (8 cols) -->
+        <div class="lg:col-span-8 p-8 rounded-3xl bg-gradient-to-br from-[#1c3352] via-[#182c44] to-[#14263d] border border-[#2e4f7a] flex flex-col justify-between relative shadow-xl">
+          <div class="space-y-3 max-w-xl">
+            <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00A0FF] bg-[#1a3852] px-3 py-1 rounded-lg border border-[#00A0FF]/40">
+              <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+              Gestão Corporativa
+            </div>
+            <h3 class="text-2xl font-black text-white">Hub Centralizado da Consultoria</h3>
+            <p class="text-xs sm:text-sm text-[#cfdeef] leading-relaxed">
+              Gerencie toda a carteira de clientes, projetos de regularização fundiária (CAR, SIGEF, Licenciamento Ambiental), cadastro de técnicos responsáveis e emissão de ARTs em um único painel.
+            </p>
+          </div>
+
+          <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-xl bg-[#122237] border border-[#2e4f7a] space-y-1">
+              <span class="text-[10px] text-[#9bb3d3] uppercase tracking-wider font-bold">Projetos AtÃ©ivos</span>
+              <div class="text-xl font-black text-white">42 Imóveis</div>
+              <span class="text-[10px] text-[#00A0FF] font-semibold">18.420 ha sob gestão</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-[#122237] border border-[#2e4f7a] space-y-1">
+              <span class="text-[10px] text-[#9bb3d3] uppercase tracking-wider font-bold">Laudos Emitidos</span>
+              <div class="text-xl font-black text-white">128 Laudos</div>
+              <span class="text-[10px] text-[#80d0ff] font-semibold">100% aprovados</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-[#122237] border border-[#2e4f7a] space-y-1">
+              <span class="text-[10px] text-[#9bb3d3] uppercase tracking-wider font-bold">Equipe Técnica</span>
+              <div class="text-xl font-black text-white">6 Analistas</div>
+              <span class="text-[10px] text-[#cfdeef] font-semibold">Acesso simultâneo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <!-- ==================== CAMADAS OFICIAIS DO PRODUTO ASE ==================== -->
+        <div id="ase-camadas-oficiais" class="pt-12 space-y-8 border-t border-[#2e4f7a]/80">
+          <div class="text-center max-w-3xl mx-auto space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00A0FF]/15 border border-[#00A0FF]/40 text-[#00A0FF] text-xs font-bold uppercase tracking-wider">
+              <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-pulse"></span>
+              <span>Bases Geoespaciais Conectadas ao Produto ASE</span>
+            </div>
+            <h3 class="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              8 Camadas Oficiais Conectadas em Tempo Real
+            </h3>
+            <p class="text-sm text-[#cfdeef]">
+              Garantia de conformidade com os principais &#243;rg&#227;os de fiscaliza&#231;&#227;o e regula&#231;&#227;o territorial do Brasil, consultadas diretamente nos servidores oficiais dos &#243;rg&#227;os (WMS/WFS) em tempo real, sem intermedi&#225;rios.
+            </p>
+          </div>
+
+          <!-- Grid dos 8 Cards Conectados ao Vivo no Motor ASE -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- 1 INCRA SIGEF -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">INCRA - SIGEF</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Certifica&#231;&#227;o de Im&#243;veis Rurais</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Glebas p&#250;blicas e privadas certificadas pela Lei 10.267/01 com memorial descritivo e limites georreferenciados.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: GeoPortal INCRA</span>
+                <span class="text-[#00A0FF] font-semibold">Sobreposi&#231;&#227;o</span>
+              </div>
+            </div>
+
+            <!-- 2 ICMBio CNUC -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">ICMBio / MMA</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Unidades de Conserva&#231;&#227;o (CNUC)</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Parques Nacionais, Florestas, APAs e zonas de amortecimento oficiais de 10 km (prote&#231;&#227;o integral e uso sustent&#225;vel).</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: INDE / MMA</span>
+                <span class="text-amber-400 font-semibold">10 km Entorno</span>
+              </div>
+            </div>
+
+            <!-- 3 CANIE CECAV -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">CANIE / CECAV</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Patrim&#244;nio Espeleol&#243;gico</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Cadastro Nacional de Informa&#231;&#245;es Espeleol&#243;gicas (cavernas e fei&#231;&#245;es c&#225;rsticas) com an&#225;lise de raio protetivo de 2,5 km.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: INDE / CECAV</span>
+                <span class="text-rose-400 font-semibold">Raio 2,5 km</span>
+              </div>
+            </div>
+
+            <!-- 4 FUNAI -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">FUNAI</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Terras Ind&#237;genas (TI)</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Pol&#237;gonos homologados, regularizados, declarados e &#225;reas em estudo ou interdi&#231;&#227;o, com buffer de entorno de 10 km.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: GeoServer FUNAI</span>
+                <span class="text-purple-400 font-semibold">10 km Entorno</span>
+              </div>
+            </div>
+
+            <!-- 5 IPHAN -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">IPHAN</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">S&#237;tios Arqueol&#243;gicos (SICG)</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Cadastro Nacional de S&#237;tios Arqueol&#243;gicos e bens acautelados pelo patrim&#244;nio hist&#243;rico, com detec&#231;&#227;o em raio de 2,5 km.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: GeoServer IPHAN</span>
+                <span class="text-fuchsia-400 font-semibold">Raio 2,5 km</span>
+              </div>
+            </div>
+
+            <!-- 6 ICMBio Embargos -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">ICMBio</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">&#193;reas Embargadas Federais</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Termos de embargo e autua&#231;&#245;es oficiais com delimita&#231;&#227;o poligonal, impedindo riscos de san&#231;&#227;o e compliance banc&#225;rio.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: INDE / ICMBio</span>
+                <span class="text-rose-400 font-semibold">Bloqueio AtÃ©ivo</span>
+              </div>
+            </div>
+
+            <!-- 7 DNIT SNV -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">DNIT / MT</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Malha Rodovi&#225;ria (SNV)</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Rodovias federais e estaduais do Sistema Nacional de Via&#231;&#227;o, com c&#225;lculo de faixas de dom&#237;nio e acessos log&#237;sticos.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: INDE / DNIT</span>
+                <span class="text-amber-400 font-semibold">5 km Entorno</span>
+              </div>
+            </div>
+
+            <!-- 8 IBGE BC250 -->
+            <div class="p-5 rounded-2xl bg-[#1c3352] border border-[#2e4f7a] space-y-2.5 shadow-md hover:border-[#00A0FF]/50 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-[#00A0FF] tracking-wider">IBGE / BC250</span>
+                <span class="flex items-center gap-1.5 text-[10px] text-[#00A0FF] font-bold bg-[#00A0FF]/15 px-2 py-0.5 rounded-full border border-[#00A0FF]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00A0FF] animate-pulse"></span>
+                  Ao vivo WFS
+                </span>
+              </div>
+              <p class="text-xs font-bold text-white group-hover:text-[#00A0FF] transition-colors">Hidrografia e Drenagem</p>
+              <p class="text-[11px] text-[#cfdeef] leading-relaxed">Rios, c&#243;rregos e drenagem da Base Cartogr&#225;fica Cont&#237;nua do Brasil, auxiliando na estimativa de cursos d'&#225;gua e APPs h&#237;dricas.</p>
+              <div class="pt-2 border-t border-[#2e4f7a]/60 text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Fonte: GeoServi&#231;os IBGE</span>
+                <span class="text-cyan-400 font-semibold">2 km Entorno</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Faixa de TransparÃªncia: Bases Complementares & Em IntegraÃ§Ã£o -->
+          <div class="p-6 rounded-2xl bg-[#14263e]/90 border border-dashed border-[#2e4f7a] space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2e4f7a]/60 pb-3">
+              <div class="flex items-center gap-2">
+                <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i>
+                <span class="text-xs font-bold uppercase tracking-wider text-[#cfdeef]">Bases Complementares, Cruzamentos Declarat&#243;rios e Em Integra&#231;&#227;o</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-medium">Transpar&#234;ncia t&#233;cnica total da plataforma PANORAMA</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">SICAR / CAR Federal</span>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">Via Upload / Recibo</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Importa&#231;&#227;o instant&#226;nea do shapefile/KML do CAR da gleba para valida&#231;&#227;o de APPs declaradas e Reserva Legal.</p>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">IBAMA (Autua&#231;&#245;es)</span>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">Em Integra&#231;&#227;o</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Cruzamento de dados tabulares de autua&#231;&#245;es do IBAMA (disponibilizados pelo &#243;rg&#227;o em tabelas abertas).</p>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">INCRA (Quilombolas)</span>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">Em Integra&#231;&#227;o</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Territ&#243;rios quilombolas e projetos de assentamento da reforma agr&#225;ria em processo de indexa&#231;&#227;o cartogr&#225;fica.</p>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">MapBiomas</span>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">An&#225;lise Temporal</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Camadas de uso e cobertura do solo para hist&#243;rico de supress&#227;o vegetal e regenera&#231;&#227;o ao longo dos anos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- /subpage-ase-content -->
+
+      <!-- Navigation Footer for Page -->
+      <div class="mt-12 flex items-center justify-between pt-6 border-t border-[#35598a]/60">
+        <button onclick="window.showLandingPage('page-vantagens')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span>Voltar para Vantagens</span>
+        </button>
+        <button onclick="window.showLandingPage('page-planos')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <span>Ver Planos & Assinaturas</span>
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== PÁGINA 4: ECONOMIA (3 CARDS DE IMPACTO & RETORNO) ==================== -->
+    <div id="page-camadas" class="hidden"></div>
+
+    <!-- ==================== PÁGINA 6: PLANOS & ASSINATURAS ==================== -->
+    <div id="page-planos" class="landing-page-content hidden max-w-7xl mx-auto px-6 py-16 relative z-10 animate-fadeIn">
+      <div class="text-center max-w-3xl mx-auto space-y-3 mb-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00A0FF]/15 border border-[#00A0FF]/40 text-[#00A0FF] text-xs font-bold uppercase tracking-wider mb-2">
+          <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+          <span>Cobran&#231;a por Produto da Plataforma</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-white">
+          Planos de Assinatura &#8212; Produto ASE
+        </h2>
+        <p class="text-sm text-[#cfdeef] max-w-2xl mx-auto">
+          Licenciamento oficial do <strong>Produto ASE (An&#225;lise Socioambiental Expedita)</strong>. Teste gratuitamente por 7 dias sem compromisso.
+        </p>
+
+        <!-- Toggle Mensal / Anual -->
+        <div class="flex items-center justify-center gap-3 pt-4">
+          <span id="plan-billing-monthly-lbl" class="text-xs font-bold text-white transition">Mensal</span>
+          <button id="toggle-plan-period" type="button" class="w-12 h-6 bg-[#1f3a5f] rounded-full p-0.5 border border-[#355b8c] transition relative cursor-pointer" onclick="window.togglePlanBillingPeriod()">
+            <div id="toggle-plan-knob" class="w-5 h-5 bg-emerald-400 rounded-full transition-all duration-200 transform translate-x-0 shadow-md"></div>
+          </button>
+          <div class="flex items-center gap-1.5">
+            <span id="plan-billing-annual-lbl" class="text-xs font-semibold text-[#8ca8c7] transition">Anual</span>
+            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">2 Meses Gr&#225;tis</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+        <!-- Plano 1: Iniciante -->
+        <div class="p-8 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] flex flex-col justify-between space-y-6 shadow-xl hover:border-[#3b6399] transition duration-200">
+          <div class="space-y-4">
+            <div class="text-xs font-extrabold text-[#9bb3d3] uppercase tracking-wider">Produto ASE &bull; Consultor Individual</div>
+            <h3 class="text-2xl font-black text-white">Iniciante (ASE)</h3>
+            <div class="flex items-baseline gap-1.5">
+              <span id="price-val-iniciante" class="text-4xl font-black text-white font-mono">R$ 149</span>
+              <span class="text-xs text-[#9bb3d3]">/m&#234;s</span>
+              <span id="price-sub-iniciante" class="text-[11px] text-slate-400 hidden font-sans ml-1">(R$ 1.428/ano)</span>
+            </div>
+            <p class="text-xs text-[#cfdeef] min-h-[32px]">Ideal para peritos aut&#244;nomos e consultores individuais que precisam de diagn&#243;sticos r&#225;pidos.</p>
+            
+            <ul class="space-y-3 text-xs text-[#cfdeef] pt-3 border-t border-[#2e4f7a]">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>At&#233; <strong>20 diagn&#243;sticos</strong> de glebas/m&#234;s</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span><strong>1 camada por vez</strong> (an&#225;lise focada)</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Buffer de an&#225;lise <strong>at&#233; 5 km</strong></span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Bases oficiais atualizadas semanalmente</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Emiss&#227;o de Laudos em PDF</span>
+              </li>
+              <li class="flex items-center gap-2.5 text-slate-400">
+                <i data-lucide="minus" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                <span>Cabe&#231;alho padr&#227;o do sistema</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Hist&#243;rico salvo por <strong>90 dias</strong></span>
+              </li>
+              <li class="flex items-center gap-2.5 text-slate-400">
+                <i data-lucide="minus" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                <span>Envio de arquivo convencional</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Exporta&#231;&#227;o Shapefile e KML</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span><strong>1 Usu&#225;rio</strong> / Assento t&#233;cnico</span>
+              </li>
+            </ul>
+          </div>
+          <a href="signup.html?plan=iniciante" class="btn-panorama-page-secondary w-full py-3.5 text-xs text-center font-bold">Come&#231;ar Teste de 7 Dias Gr&#225;tis</a>
+        </div>
+
+        <!-- Plano 2: Profissional ⭐ O Campeão -->
+        <div class="p-8 rounded-3xl bg-gradient-to-b from-[#1c3352] to-[#122237] border-2 border-emerald-500 flex flex-col justify-between space-y-6 relative shadow-2xl shadow-emerald-950/40 md:scale-[1.03]">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+            <span>&#11088; MAIS ESCOLHIDO PELAS CONSULTORIAS</span>
+          </div>
+          <div class="space-y-4">
+            <div class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">Produto ASE &bull; Consultorias &amp; Escrit&#243;rios</div>
+            <h3 class="text-2xl font-black text-white">Profissional (ASE)</h3>
+            <div class="flex items-baseline gap-1.5">
+              <span id="price-val-profissional" class="text-4xl font-black text-white font-mono">R$ 297</span>
+              <span class="text-xs text-[#9bb3d3]">/m&#234;s</span>
+              <span id="price-sub-profissional" class="text-[11px] text-slate-400 hidden font-sans ml-1">(R$ 2.868/ano)</span>
+            </div>
+            <p class="text-xs text-[#cfdeef] min-h-[32px]">Para consultorias que querem acelerar entregas, laudos com sua marca e acesso em equipe.</p>
+            
+            <ul class="space-y-3 text-xs text-slate-200 pt-3 border-t border-[#2e4f7a]">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 font-bold"></i>
+                <span>At&#233; <strong>60 diagn&#243;sticos</strong> de glebas/m&#234;s</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span><strong>1 camada por vez</strong> (an&#225;lise focada)</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Buffer regulat&#243;rio completo <strong>at&#233; 10 km</strong></span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Bases oficiais atualizadas semanalmente</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Emiss&#227;o de Laudos em PDF</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 font-bold"></i>
+                <span><strong>Logo personaliz&#225;vel</strong> no laudo</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 font-bold"></i>
+                <span>Hist&#243;rico <strong>permanente e ilimitado</strong></span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 font-bold"></i>
+                <span><strong>Portal do Cliente com Link/PIN</strong></span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Exporta&#231;&#227;o Shapefile e KML</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 font-bold"></i>
+                <span>At&#233; <strong>3 Usu&#225;rios</strong> / Assentos t&#233;cnicos</span>
+              </li>
+            </ul>
+          </div>
+          <a href="signup.html?plan=profissional" class="btn-panorama-page w-full py-3.5 text-xs text-center font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25">Testar Plano Profissional Gr&#225;tis</a>
+        </div>
+      </div>
+
+      <!-- Navigation Footer for Page -->
+      <div class="mt-12 flex items-center justify-between pt-6 border-t border-[#35598a]/60">
+        <button onclick="window.showLandingPage('page-produtos')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span>Voltar para Produto ASE</span>
+        </button>
+        <button onclick="window.showLandingPage('page-solucoes')" class="btn-panorama-page-secondary px-5 py-2.5 text-xs">
+          <span>Início (Solução)</span>
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    
+    <!-- ==================== PÃGINA 5: ÃREA DO CLIENTE (PORTAL CORPORATIVO) ==================== -->
+    <div id="page-cliente" class="landing-page-content hidden max-w-7xl mx-auto px-6 py-12 relative z-10 animate-fadeIn text-left">
+      <!-- Top Welcome Banner -->
+      <div class="p-8 rounded-3xl bg-gradient-to-r from-[#1c3352] via-[#203c62] to-[#172d4a] border border-[#35598a] shadow-2xl relative overflow-hidden mb-10">
+        <div class="pointer-events-none absolute -right-10 -bottom-10 w-80 h-80 bg-[#00A0FF]/15 rounded-full blur-3xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00A0FF]/20 border border-[#00A0FF]/40 text-[#0094e8] text-xs font-bold uppercase tracking-wider">
+              <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-pulse"></span>
+              <span>Portal do Assinante AtÃ©ivo</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Ãrea do Cliente &bull; <span id="client-area-name" class="text-[#0094e8]">Rodrigo Vasconcelos</span>
+            </h1>
+            <p id="client-area-company" class="text-xs sm:text-sm text-[#cfdeef]">
+              Consultoria Ambiental & FundiÃ¡ria &bull; Acesso Corporativo PANORAMA GIS
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2.5 rounded-2xl bg-[#14253b] border border-[#2d4d75] text-right">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Status do Acesso</span>
+              <span class="text-xs font-extrabold text-[#0094e8] flex items-center gap-1.5 justify-end">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Autenticado
+              </span>
+            </div>
+            <button onclick="window.handleLandingLogout()" class="px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Sair</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Principal: SoluÃ§Ãµes Contratadas + GestÃ£o da Conta -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- COLUNA 1 & 2: SOLUÃ‡ÃƒO CONTRATADA (ASE) EM DESTAQUE MÃXIMO -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Card de SoluÃ§Ã£o Contratada: ASE -->
+          <div class="p-8 rounded-3xl bg-[#1c3352] border-2 border-[#00A0FF] shadow-2xl space-y-6 relative overflow-hidden group">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2d4d75]">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-[#00A0FF] text-white flex items-center justify-center shadow-lg shadow-[#00A0FF]/40 shrink-0">
+                  <i data-lucide="map" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-black text-white tracking-tight">ASE â€” AnÃ¡lise Socioambiental Expedita</h2>
+                    <span class="px-2.5 py-0.5 rounded-full bg-[#00A0FF]/20 border border-[#00A0FF]/50 text-[#0094e8] font-bold text-[10px] uppercase">
+                      SoluÃ§Ã£o Contratada
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#9bb3d3] mt-0.5">VersÃ£o WebGIS Enterprise &bull; Bases Oficiais Conectadas</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- DescriÃ§Ã£o e Recursos -->
+            <p class="text-xs sm:text-sm text-[#cfdeef] leading-relaxed">
+              Sua consultoria possui licenÃ§a ativa para o produto <strong>ASE</strong>. Realize diagnÃ³sticos territoriais periciais, cruzando qualquer polÃ­gono em segundos com as 8 bases oficiais normativas (SIGEF/INCRA, CAR, FUNAI, IBAMA, ICMBio, CANIE, IPHAN) e gere laudos com ART.
+            </p>
+
+            <!-- MÃ©tricas RÃ¡pidas do ASE -->
+            <div class="grid grid-cols-3 gap-4 pt-2">
+              <div class="p-4 rounded-2xl bg-[#14263e] border border-[#264165] text-center">
+                <span class="text-[11px] text-slate-400 font-medium block">DiagnÃ³sticos do MÃªs</span>
+                <span class="text-xl font-mono font-black text-white mt-1 block">12 <span class="text-xs text-slate-400 font-sans">/ 100</span></span>
+              </div>
+              <div class="p-4 rounded-2xl bg-[#14263e] border border-[#264165] text-center">
+                <span class="text-[11px] text-slate-400 font-medium block">Bases Federativas</span>
+                <span class="text-xl font-mono font-black text-[#0094e8] mt-1 block">8 / 8</span>
+              </div>
+              <div class="p-4 rounded-2xl bg-[#14263e] border border-[#264165] text-center">
+                <span class="text-[11px] text-slate-400 font-medium block">Laudos Emitidos</span>
+                <span class="text-xl font-mono font-black text-white mt-1 block">34</span>
+              </div>
+            </div>
+
+            <!-- BOTÃƒO DE AÃ‡ÃƒO: ABRIR SOLUÃ‡ÃƒO CONTRATADA EM NOVA GUIA -->
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#2d4d75]">
+              <div class="flex items-center gap-2 text-xs text-[#9bb3d3]">
+                <i data-lucide="info" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+                <span>AbrirÃ¡ em uma nova guia com acesso direto autorizado.</span>
+              </div>
+
+              <a 
+                href="ase.html" 
+                target="_blank" 
+                class="btn-panorama-page w-full sm:w-auto px-8 py-3.5 text-sm"
+              >
+                <i data-lucide="layers" class="w-4 h-4"></i>
+                <span>Acessar SoluÃ§Ã£o ASE</span>
+                <i data-lucide="external-link" class="w-4 h-4 ml-1"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- HistÃ³rico Recente de Laudos do ASE -->
+          <div class="p-6 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2e4f7a]">
+              <div class="flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4 text-[#0094e8]"></i>
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider">HistÃ³rico Recente de DiagnÃ³sticos (ASE)</h3>
+              </div>
+              <span class="text-xs text-slate-400">Ãšltimos diagnÃ³sticos realizados</span>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="p-3.5 rounded-xl bg-[#15273e] border border-[#264165] flex items-center justify-between gap-3 text-xs">
+                <div class="space-y-0.5">
+                  <div class="font-bold text-white">Fazenda Primavera (Gleba Santa Maria)</div>
+                  <div class="text-[11px] text-slate-400 font-mono">Rio Verde - GO &bull; 1.265,4 ha &bull; CAR: GO-5218805-2A84B97C</div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-[#00A0FF]/20 text-[#0094e8] font-bold text-[10px]">Liberado</span>
+                  <a href="ase.html" target="_blank" class="btn-panorama-page px-3.5 py-1.5 text-xs">Abrir no ASE</a>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-[#15273e] border border-[#264165] flex items-center justify-between gap-3 text-xs">
+                <div class="space-y-0.5">
+                  <div class="font-bold text-white">Gleba EsperanÃ§a</div>
+                  <div class="text-[11px] text-slate-400 font-mono">Cristalina - GO &bull; 450,2 ha &bull; Buffer FUNAI 8km</div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">AtÃ©enÃ§Ã£o</span>
+                  <a href="ase.html" target="_blank" class="btn-panorama-page px-3.5 py-1.5 text-xs">Abrir no ASE</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA 3: PLANO CONTRATADO & CONFIGURAÃ‡Ã•ES DE ACESSO -->
+        <div class="space-y-8">
+          
+          <!-- Card: Plano Contratado -->
+          <div class="p-6 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2e4f7a]">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#0094e8]">Plano Contratado</span>
+              <span class="px-2 py-0.5 rounded-full bg-[#00A0FF]/20 text-[#0094e8] text-[10px] font-bold">AtÃ©ivo</span>
+            </div>
+            <div>
+              <h3 id="client-plan-title" class="text-xl font-black text-white">Plano Corporativo (ASE)</h3>
+              <p class="text-xs text-[#cfdeef] mt-1">Licenciamento anual multiusuÃ¡rio com suporte prioritÃ¡rio.</p>
+            </div>
+            <ul class="space-y-2 text-xs text-[#cfdeef] pt-2 border-t border-[#264165]">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-[#0094e8]"></i> DiagnÃ³sticos de glebas ilimitados</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-[#0094e8]"></i> 8 Bases Governamentais Oficiais</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-[#0094e8]"></i> Laudo Pericial White-Label com ART</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-[#0094e8]"></i> ExportaÃ§Ã£o KML, Shapefile e GeoJSON</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-[#0094e8]"></i> AtÃ©Ã© 5 assentos simultÃ¢neos</li>
+            </ul>
+          </div>
+
+          <!-- Card: ConfiguraÃ§Ãµes de Acesso ao PANORAMA -->
+          <div class="p-6 rounded-3xl bg-[#1c3352] border border-[#2e4f7a] shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2e4f7a]">
+              <div class="flex items-center gap-2">
+                <i data-lucide="key" class="w-4 h-4 text-[#0094e8]"></i>
+                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Acesso ao PANORAMA</h3>
+              </div>
+              <span class="text-[10px] text-slate-400">SeguranÃ§a</span>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">E-mail de Login</label>
+                <input id="client-cfg-email" type="text" readonly value="rodrigo@suaconsultoria.com.br" class="w-full bg-[#14263e] border border-[#264165] rounded-xl px-3 py-2 text-white font-mono text-[11px]" />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">Token de API Corporativa</label>
+                <div class="flex items-center gap-2">
+                  <input id="client-cfg-token" type="password" readonly value="pgis_98a7sd8f97a8sdf7" class="w-full bg-[#14263e] border border-[#264165] rounded-xl px-3 py-2 text-white font-mono text-[11px]" />
+                  <button type="button" onclick="navigator.clipboard?.writeText('pgis_sec_98a7sd8f97a8sdf7'); alert('Token copiado!');" class="p-2 rounded-xl bg-[#203b5f] hover:bg-[#2a4d7a] text-slate-200 transition" title="Copiar Token">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1">ResponsÃ¡vel TÃ©cnico (ART)</label>
+                <input id="client-cfg-rt" type="text" value="Eng. Rodrigo Vasconcelos â€” CREA 123456/D" class="w-full bg-[#14263e] border border-[#264165] rounded-xl px-3 py-2 text-white text-xs" />
+              </div>
+
+              <button type="button" onclick="localStorage.setItem('panorama_rt_name', document.getElementById('client-cfg-rt').value); alert('ConfiguraÃ§Ãµes atualizadas com sucesso!');" class="w-full py-2.5 rounded-xl bg-[#203b5f] hover:bg-[#284a75] border border-[#35598a] text-white font-bold text-xs transition cursor-pointer">
+                Salvar ConfiguraÃ§Ãµes
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div></div>
+
+    <!-- Modern Site Footer (GISCARTA Blue Theme) -->
+    <footer class="w-full bg-[#182c44] border-t border-[#2a4970] py-14 text-xs text-[#cfdeef] relative z-10">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+        <!-- Brand Info -->
+        <div class="space-y-3 text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-3">
+            <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Emblema PANORAMA GIS" class="h-10 w-auto object-contain " />
+            <span class="font-black text-lg tracking-tight text-white leading-none">PANORAMA <span class="text-[#00A0FF]">GIS</span></span>
+          </div>
+          <p class="text-[#9bb3d3] text-xs leading-relaxed max-w-md">
+            Plataforma WebGIS de intelig&#234;ncia territorial para an&#225;lise socioambiental.
+          </p>
+          <div class="flex items-center justify-center md:justify-start gap-2 text-[11px] text-[#00A0FF] font-medium">
+            <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-pulse"></span>
+            Sistemas operacionais e bases governamentais sincronizadas
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-6 pt-6 border-t border-[#2a4970] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#86a2c7] gap-4">
+        <div>
+          &copy; 2026 PANORAMA GIS — Ampliando a Visão do seu Negócio. Todos os direitos reservados.
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="#" class="hover:text-white">Termos de Uso</a>
+          <span>•</span>
+          <a href="#" class="hover:text-white">Privacidade & LGPD</a>
+          <span>•</span>
+          <a href="#" class="hover:text-white">Segurança da Informação</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- BotÃ£o Flutuante TemporÃ¡rio: Testar Mapa no Cantinho da PÃ¡gina -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <button id="btn-enter-sandbox" onclick="if(window.enterSandboxMode){window.enterSandboxMode();}else{document.getElementById('landing-page-view')?.classList.add('hidden');}" class="group px-4 py-2.5 rounded-full bg-[#162a42]/95 hover:bg-[#1f3b5c] text-[#00A0FF] border border-[#00A0FF]/50 backdrop-blur-md text-xs font-bold shadow-2xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105" title="Testar o sistema diretamente em modo local sem login (Temporário)">
+        <span class="w-2 h-2 rounded-full bg-[#00A0FF] animate-pulse"></span>
+        <i data-lucide="compass" class="w-4 h-4 text-[#00A0FF]"></i>
+        <span>Testar Mapa</span>
+        <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#7eceec] font-semibold">Demo</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Tabbed Multi-Page Landing View Switcher with Silky Smooth Transition
+    let isPageTransitioning = false;
+window.showLandingPage = function(pageId, anchorId) {
+      if (pageId === 'page-camadas') {
+        pageId = 'page-produtos';
+        anchorId = 'ase-camadas-oficiais';
+      }
+      if (isPageTransitioning) return;
+      const pages = ['page-solucoes', 'page-vantagens', 'page-produtos', 'page-planos', 'page-cliente'];
+
+      let currentPage = null;
+      pages.forEach(function(p) {
+        const el = document.getElementById(p);
+        if (el && !el.classList.contains('hidden')) {
+          currentPage = el;
+        }
+      });
+
+      const targetEl = document.getElementById(pageId);
+      if (!targetEl) return;
+
+      const navMap = {
+        'page-solucoes': 'nav-link-solucoes',
+        'page-vantagens': 'nav-link-vantagens',
+        'page-produtos': 'nav-link-produtos',
+        'page-planos': 'nav-link-planos',
+        'page-cliente': 'nav-link-cliente'
+      };
+
+      const activeNavId = navMap[pageId];
+
+      Object.keys(navMap).forEach(function(k) {
+        const link = document.getElementById(navMap[k]);
+        if (link) {
+          if (navMap[k] === activeNavId) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        }
+      });
+
+      try { history.replaceState(null, '', '#' + (anchorId === 'ase-camadas-oficiais' ? 'camadas' : pageId.replace('page-', ''))); } catch(e) {}
+
+      function scrollToAnchor() {
+        if (anchorId) {
+          setTimeout(function() {
+            const anchorEl = document.getElementById(anchorId);
+            if (anchorEl) anchorEl.scrollIntoView({ behavior: 'smooth' });
+          }, 140);
+        }
+      }
+
+      if (targetEl === currentPage) {
+        scrollToAnchor();
+        return;
+      }
+
+      isPageTransitioning = true;
+
+      if (currentPage) {
+        currentPage.classList.add('page-exit');
+        currentPage.classList.remove('page-active');
+
+        setTimeout(function() {
+          currentPage.classList.add('hidden');
+          currentPage.classList.remove('page-exit');
+
+          targetEl.classList.remove('hidden');
+          targetEl.classList.add('page-enter');
+
+          const landing = document.getElementById('landing-page-view');
+          if (landing && !anchorId) landing.scrollTop = 0;
+
+          requestAnimationFrame(function() {
+            targetEl.classList.remove('page-enter');
+            targetEl.classList.add('page-active');
+            if (window.lucide && window.lucide.createIcons) {
+              window.lucide.createIcons();
+            }
+            scrollToAnchor();
+            setTimeout(function() {
+              isPageTransitioning = false;
+            }, 300);
+          });
+        }, 120);
+      } else {
+        targetEl.classList.remove('hidden');
+        targetEl.classList.add('page-active');
+        isPageTransitioning = false;
+        if (window.lucide && window.lucide.createIcons) {
+          window.lucide.createIcons();
+        }
+        scrollToAnchor();
+      }
+    };
+
+    // Alternância de Período dos Planos (Mensal / Anual)
+    let planPeriodAnnual = false;
+    window.togglePlanBillingPeriod = function() {
+      planPeriodAnnual = !planPeriodAnnual;
+      const knob = document.getElementById('toggle-plan-knob');
+      const monthlyLbl = document.getElementById('plan-billing-monthly-lbl');
+      const annualLbl = document.getElementById('plan-billing-annual-lbl');
+      const priceIni = document.getElementById('price-val-iniciante');
+      const pricePro = document.getElementById('price-val-profissional');
+      const subIni = document.getElementById('price-sub-iniciante');
+      const subPro = document.getElementById('price-sub-profissional');
+
+      if (planPeriodAnnual) {
+        if (knob) {
+          knob.classList.remove('translate-x-0');
+          knob.classList.add('translate-x-6');
+        }
+        if (monthlyLbl) {
+          monthlyLbl.classList.remove('text-white', 'font-bold');
+          monthlyLbl.classList.add('text-[#8ca8c7]', 'font-semibold');
+        }
+        if (annualLbl) {
+          annualLbl.classList.remove('text-[#8ca8c7]', 'font-semibold');
+          annualLbl.classList.add('text-white', 'font-bold');
+        }
+        if (priceIni) priceIni.textContent = 'R$ 119';
+        if (pricePro) pricePro.textContent = 'R$ 239';
+        if (subIni) subIni.classList.remove('hidden');
+        if (subPro) subPro.classList.remove('hidden');
+      } else {
+        if (knob) {
+          knob.classList.remove('translate-x-6');
+          knob.classList.add('translate-x-0');
+        }
+        if (monthlyLbl) {
+          monthlyLbl.classList.remove('text-[#8ca8c7]', 'font-semibold');
+          monthlyLbl.classList.add('text-white', 'font-bold');
+        }
+        if (annualLbl) {
+          annualLbl.classList.remove('text-white', 'font-bold');
+          annualLbl.classList.add('text-[#8ca8c7]', 'font-semibold');
+        }
+        if (priceIni) priceIni.textContent = 'R$ 149';
+        if (pricePro) pricePro.textContent = 'R$ 297';
+        if (subIni) subIni.classList.add('hidden');
+        if (subPro) subPro.classList.add('hidden');
+      }
+    };
+
+    // SincronizaÃ§Ã£o e Logout na Tela Inicial
+    window.handleLandingLogout = function() {
+      localStorage.removeItem('panorama_session');
+      try {
+        if (window.supabase && window.CONFIG) {
+          const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+          sb.auth.signOut();
+        }
+      } catch(e) {}
+      
+      // AtÃ©ualiza a interface da landing page
+      document.getElementById('nav-link-cliente')?.classList.add('hidden');
+      document.getElementById('landing-user-profile-widget')?.classList.add('hidden');
+      document.getElementById('btn-landing-login-main')?.classList.remove('hidden');
+      window.showLandingPage('page-solucoes');
+    };
+
+    // DetecÃ§Ã£o automÃ¡tica de sessÃ£o autenticada na tela inicial
+    window.addEventListener('DOMContentLoaded', function() {
+      const sessionStr = localStorage.getItem('panorama_session');
+      if (sessionStr) {
+        try {
+          const sess = JSON.parse(sessionStr);
+          const navClientBtn = document.getElementById('nav-link-cliente');
+          const navWidget = document.getElementById('landing-user-profile-widget');
+          const navLoginBtn = document.getElementById('btn-landing-login-main');
+          const nameEl = document.getElementById('client-area-name');
+          const compEl = document.getElementById('client-area-company');
+          const topNameEl = document.getElementById('landing-user-display-name');
+          const topAvatarEl = document.getElementById('landing-user-avatar');
+          const emailInput = document.getElementById('client-cfg-email');
+
+          if (navClientBtn) navClientBtn.classList.remove('hidden');
+          if (navWidget) navWidget.classList.remove('hidden');
+          if (navLoginBtn) navLoginBtn.classList.add('hidden');
+
+          if (nameEl && sess.name) nameEl.textContent = sess.name;
+          if (topNameEl && sess.name) topNameEl.textContent = sess.name;
+          if (compEl && sess.company) compEl.textContent = sess.company + " â€¢ Acesso Corporativo PANORAMA GIS";
+          if (emailInput && sess.email) emailInput.value = sess.email;
+          if (topAvatarEl && sess.name) {
+            const parts = sess.name.trim().split(' ');
+            topAvatarEl.textContent = parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
+          }
+
+          // Se veio do login com ?page=cliente ou #cliente, abre diretamente a Ãrea do Cliente
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('page') === 'cliente' || window.location.hash === '#cliente') {
+            window.showLandingPage('page-cliente');
+          }
+        } catch(e) {}
+      }
+    });
+  </script>
+
+
+            <!-- ==================== PÃGINA FULL-SCREEN: LOGIN (CLONE EXATO GISCARTA) ==================== -->
+    <div id="modal-auth-login" class="hidden fixed inset-0 z-50 w-screen h-screen bg-[#182c44] flex flex-col md:flex-row overflow-hidden select-none animate-fadeIn">
+      
+      <!-- Lado Esquerdo: Canvas Hero GISCARTA (72% da tela com Globo e Canto Arredondado no Topo Direito) -->
+      <div class="hidden md:flex flex-1 h-full bg-[#243f64] relative flex-col justify-between p-12 lg:p-16 rounded-r-[36px] overflow-hidden select-none">
+        
+        <!-- Background SVG Globe GISCARTA -->
+        <div class="absolute inset-0 z-0 pointer-events-none flex items-center justify-end">
+          <img src="assets/images/giscarta_globe.svg" alt="Globo GIS" class="w-full h-full object-cover scale-95 opacity-80 translate-x-14 -translate-y-20" />
+        </div>
+
+        <!-- Top Branding -->
+        <div class="relative z-10 flex items-center gap-3">
+          <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Panorama GIS" class="h-11 w-auto object-contain " />
+          <div class="flex flex-col">
+            <div class="text-2xl font-black tracking-tight text-white leading-none">
+              PANORAMA <span class="text-[#00A0FF]">GIS</span>
+            </div>
+            
+          </div>
+        </div>
+
+        <!-- Bottom Headline -->
+        <div class="relative z-10 max-w-xl pb-4">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+          Intelig&#234;ncia territorial<br/>para seu neg&#243;cio
+        </h1>
+      </div>
+      </div>
+
+      <!-- Lado Direito: Barra Lateral de Login (28% da tela, 100vh) -->
+      <div class="w-full md:w-[440px] lg:w-[480px] xl:w-[500px] h-full bg-[#182c44] flex flex-col justify-between p-8 sm:p-10 lg:p-12 overflow-y-auto custom-scrollbar relative z-10">
+        
+        <!-- Top Action Bar -->
+        <div class="flex items-center justify-between pb-4">
+          <button id="btn-back-from-login" type="button" class="inline-flex items-center gap-2 text-xs font-bold text-[#8ca8c7] hover:text-[#00A0FF] transition cursor-pointer">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Voltar ao In&#237;cio</span>
+          </button>
+          <button id="btn-close-auth-login" type="button" class="w-8 h-8 rounded-full bg-[#203a5a] hover:bg-[#2b4c74] text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer" title="Fechar">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="my-auto py-4">
+          <h2 class="text-xl sm:text-[22px] font-black text-white mb-2 tracking-tight whitespace-nowrap">Conecte-se ao PANORAMA GIS</h2>
+          <p class="text-xs text-[#9bb3d3] mb-6">Acesse seu ambiente corporativo seguro</p>
+
+          <!-- Google Auth Button (GISCARTA style) -->
+          <button type="button" onclick="window.showToast ? window.showToast('Login com Google dispon&#237;vel na vers&#227;o Cloud conectada.') : alert('Login com Google')" class="w-full py-3 px-4 bg-[#213c5e] hover:bg-[#284973] border border-[#345985] rounded-xl text-white font-bold text-xs flex items-center justify-center gap-3 transition cursor-pointer mb-5 shadow-sm">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2 0 10.04 0 12s.46 3.8 1.27 5.42l4.01-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/></svg>
+            <span>Entrar com o Google</span>
+          </button>
+
+          <div class="flex items-center my-5">
+            <div class="flex-grow border-t border-[#2e5077]"></div>
+            <span class="px-3 text-[11px] text-[#7f9ebf] uppercase font-bold tracking-wider">ou</span>
+            <div class="flex-grow border-t border-[#2e5077]"></div>
+          </div>
+
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> E-mail Corporativo</label>
+              <input id="login-email-input" type="email" placeholder="voce@suaconsultoria.com.br" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition" />
+            </div>
+
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Senha</label>
+              <div class="relative">
+                <input id="login-pass-input" type="password" placeholder="Sua senha" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition pr-11" />
+                <button type="button" onclick="const p=document.getElementById('login-pass-input'); p.type = p.type==='password'?'text':'password';" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <button id="btn-submit-login" type="button" class="w-full py-3.5 rounded-xl bg-[#00A0FF] hover:bg-[#008ee0] text-white font-black text-sm shadow-xl transition cursor-pointer mt-2">
+              Entrar
+            </button>
+
+            <!-- Links em duas colunas estilo GISCARTA -->
+            <div class="flex items-center justify-between text-xs pt-1">
+              <button id="btn-switch-to-trial" type="button" class="text-[#00A0FF] font-bold hover:underline cursor-pointer">
+                Fa&#231;a Parte
+              </button>
+              <button id="btn-forgot" type="button" class="text-[#00A0FF] font-bold hover:underline cursor-pointer">
+                Esqueceu a senha?
+              </button>
+            </div>
+
+            <button id="btn-login-sandbox" type="button" class="w-full py-2.5 rounded-xl bg-[#213c5e]/70 hover:bg-[#284973] text-slate-200 border border-[#345985] font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer mt-3">
+              <i data-lucide="play" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Entrar em Modo Demonstra&#231;&#227;o / Teste Local
+            </button>
+
+            <div id="login-error" class="hidden text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-xl px-3.5 py-2.5"></div>
+            <div id="config-warning" class="hidden text-xs text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3.5 py-2.5">Supabase ainda n&#227;o configurado. Voc&#234; pode usar o bot&#227;o <strong>Entrar em Modo Demonstra&#231;&#227;o</strong> para testar livremente sem banco.</div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-[#244266] text-center text-[11px] text-[#6382a3]">
+          Ao se conectar, voc&#234; concorda com nossos <a href="#" class="underline hover:text-white">Termos de Servi&#231;o</a> e <a href="#" class="underline hover:text-white">Pol&#237;tica de Privacidade</a>.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== PÃGINA FULL-SCREEN: ASSINATURA / CADASTRO (CLONE EXATO GISCARTA) ==================== -->
+    <div id="modal-auth-trial" class="hidden fixed inset-0 z-50 w-screen h-screen bg-[#182c44] flex flex-col md:flex-row overflow-hidden select-none animate-fadeIn">
+      
+      <!-- Lado Esquerdo: Canvas Hero GISCARTA (72% da tela com Globo e Canto Arredondado no Topo Direito) -->
+      <div class="hidden md:flex flex-1 h-full bg-[#243f64] relative flex-col justify-between p-12 lg:p-16 rounded-r-[36px] overflow-hidden select-none">
+        
+        <!-- Background SVG Globe GISCARTA -->
+        <div class="absolute inset-0 z-0 pointer-events-none flex items-center justify-end">
+          <img src="assets/images/giscarta_globe.svg" alt="Globo GIS" class="w-full h-full object-cover scale-95 opacity-80 translate-x-14 -translate-y-20" />
+        </div>
+
+        <!-- Top Branding -->
+        <div class="relative z-10 flex items-center gap-3">
+          <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Panorama GIS" class="h-11 w-auto object-contain " />
+          <div class="flex flex-col">
+            <div class="text-2xl font-black tracking-tight text-white leading-none">
+              PANORAMA <span class="text-[#00A0FF]">GIS</span>
+            </div>
+            
+          </div>
+        </div>
+
+        <!-- Bottom Headline -->
+        <div class="relative z-10 max-w-xl pb-4">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+          Intelig&#234;ncia territorial<br/>para seu neg&#243;cio
+        </h1>
+      </div>
+      </div>
+
+      <!-- Lado Direito: Barra Lateral de Cadastro (28% da tela, 100vh) -->
+      <div class="w-full md:w-[440px] lg:w-[480px] xl:w-[500px] h-full bg-[#182c44] flex flex-col justify-between p-8 sm:p-10 lg:p-12 overflow-y-auto custom-scrollbar relative z-10">
+        
+        <!-- Top Action Bar -->
+        <div class="flex items-center justify-between pb-4">
+          <button id="btn-back-from-trial" type="button" class="inline-flex items-center gap-2 text-xs font-bold text-[#8ca8c7] hover:text-[#00A0FF] transition cursor-pointer">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Voltar ao In&#237;cio</span>
+          </button>
+          <button id="btn-close-auth-trial" type="button" class="w-8 h-8 rounded-full bg-[#203a5a] hover:bg-[#2b4c74] text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer" title="Fechar">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="my-auto py-4">
+          <h2 class="text-xl sm:text-[22px] font-black text-white mb-2 tracking-tight whitespace-nowrap">Fa&#231;a Parte do PANORAMA GIS</h2>
+          <p class="text-xs text-[#9bb3d3] mb-6">Crie sua conta corporativa com 7 dias de teste gr&#225;tis</p>
+
+          <!-- Google Auth Button (GISCARTA style) -->
+          <button type="button" onclick="window.showToast ? window.showToast('Cadastro com Google dispon&#237;vel na vers&#227;o Cloud conectada.') : alert('Cadastro com Google')" class="w-full py-3 px-4 bg-[#213c5e] hover:bg-[#284973] border border-[#345985] rounded-xl text-white font-bold text-xs flex items-center justify-center gap-3 transition cursor-pointer mb-5 shadow-sm">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2 0 10.04 0 12s.46 3.8 1.27 5.42l4.01-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/></svg>
+            <span>Cadastrar com o Google</span>
+          </button>
+
+          <div class="flex items-center my-5">
+            <div class="flex-grow border-t border-[#2e5077]"></div>
+            <span class="px-3 text-[11px] text-[#7f9ebf] uppercase font-bold tracking-wider">ou</span>
+            <div class="flex-grow border-t border-[#2e5077]"></div>
+          </div>
+
+          <div class="space-y-3.5 text-xs">
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Nome da Consultoria / Raz&#227;o Social</label>
+              <input id="trial-company-name" type="text" placeholder="Ex: BiomaGeo Engenharia Ambiental" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition" />
+            </div>
+
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> E-mail Corporativo</label>
+              <input id="trial-email" type="email" placeholder="contato@suaempresa.com.br" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Senha de Acesso</label>
+                <div class="relative">
+                  <input id="trial-password" type="password" placeholder="M&#237;nimo 8 d&#237;gitos" minlength="8" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition pr-10" />
+                  <button type="button" onclick="const p=document.getElementById('trial-password'); p.type = p.type==='password'?'text':'password';" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Confirmar Senha</label>
+                <div class="relative">
+                  <input id="trial-password-confirm" type="password" placeholder="Repita a senha" minlength="8" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[#00A0FF] transition pr-10" />
+                  <button type="button" onclick="const p=document.getElementById('trial-password-confirm'); p.type = p.type==='password'?'text':'password';" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos auxiliares preservados mas simplificados -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label class="block text-[#8ca8c7] font-semibold mb-1">CNPJ ou CPF (Opcional)</label>
+                <input id="trial-cnpj" type="text" placeholder="00.000.000/0001-00" class="w-full bg-[#193250] border border-[#284970] rounded-xl px-3 py-2 text-white placeholder-slate-400 font-mono text-[11px] focus:outline-none focus:border-[#00A0FF]" />
+              </div>
+              <div>
+                <label class="block text-[#8ca8c7] font-semibold mb-1">Respons&#225;vel T&#233;cnico (Opcional)</label>
+                <input id="trial-rt-name" type="text" placeholder="Ex: Eng. Rodrigo Silva" class="w-full bg-[#193250] border border-[#284970] rounded-xl px-3 py-2 text-white placeholder-slate-400 text-[11px] focus:outline-none focus:border-[#00A0FF]" />
+              </div>
+            </div>
+
+            <!-- SeleÃ§Ã£o de Plano PrÃ©-definido -->
+            <div>
+              <label class="block text-[#8ca8c7] font-semibold mb-1">Plano Selecionado para os 7 dias</label>
+              <select id="trial-plan-select" class="w-full bg-[#193250] border border-emerald-500/60 rounded-xl px-3 py-2 text-emerald-400 font-bold text-xs focus:outline-none cursor-pointer">
+                <option value="profissional" selected>Profissional (ASE) ⭐ O Campeão &bull; 60 laudos &bull; R$ 297/mês</option>
+                <option value="iniciante">Iniciante (ASE) &bull; 20 laudos &bull; R$ 149/mês</option>
+              </select>
+            </div>
+
+            <!-- Card de Destaque 7 Dias GISCARTA Style -->
+            <div class="p-3 rounded-xl bg-[#1c3947]/80 border border-[#00A0FF]/50 text-xs text-[#9de8d5] space-y-1 shadow-sm">
+              <div class="font-bold flex items-center gap-1.5 text-white">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-[#00A0FF]"></i>
+                <span>7 Dias Gr&#225;tis Inclusos â€¢ Sem Cart&#227;o</span>
+              </div>
+              <p class="text-[#cfdeef] text-[11px] leading-relaxed">
+                Ambiente liberado imediatamente com an&#225;lise de glebas rurais, cruzamentos SIGEF/CAR e laudos com sua marca.
+              </p>
+            </div>
+
+            <button id="btn-submit-trial" type="button" class="w-full py-3.5 rounded-xl bg-[#00A0FF] hover:bg-[#008ee0] text-white font-black text-sm shadow-xl transition cursor-pointer mt-1">
+              Cadastrar
+            </button>
+
+            <!-- Link estilo GISCARTA: I already have an account -->
+            <div class="text-center pt-2">
+              <button id="btn-switch-to-login" type="button" class="text-[#00A0FF] font-bold text-xs hover:underline cursor-pointer">
+                J&#225; tem uma conta? Conecte-se
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-[#244266] text-center text-[11px] text-[#6382a3]">
+          Ao se cadastrar, voc&#234; concorda com nossos <a href="#" class="underline hover:text-white">Termos de Servi&#231;o</a> e <a href="#" class="underline hover:text-white">Pol&#237;tica de Privacidade</a>.
+        </div>
+      </div>
+    </div>
+  <!-- ==================== TRIAL COUNTDOWN BAR (Shown when logged in as a 7-Day Trial Consultancy) ==================== -->
+  <div id="trial-countdown-banner" class="hidden bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-[#1E293B] border-b border-emerald-500/30 px-5 py-1.5 flex items-center justify-between text-xs z-30 relative">
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-0.5 rounded bg-[#00A0FF] text-white font-extrabold text-[10px] uppercase">Teste Grátis 7 Dias AtÃ©ivo</span>
+      <span id="trial-banner-text" class="text-slate-200">Restam <strong>7 dias</strong> de avaliação gratuita no Produto ASE (Plano Profissional).</span>
+    </div>
+    <button id="btn-activate-definitive" class="text-[11px] font-bold text-[#00A0FF] hover:text-white underline">
+      Confirmar Assinatura Definitiva →
+    </button>
+  </div>
+
+  <!-- ==================== TOP BAR ==================== -->
+  <header id="top-bar" class="h-20 sm:h-24 bg-[#0F172A] border-b border-white/[0.08] px-3 sm:px-6 flex items-center justify-between z-40 relative transition-all duration-300">
+    <!-- Left: Brand / White-Label Identity & Mobile Drawer Triggers -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      <!-- Mobile Drawer Trigger for Left Sidebar (Camadas / Ferramentas) -->
+      <button id="btn-toggle-layers-mobile" class="lg:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-[#00A0FF] hover:bg-slate-700 transition cursor-pointer touch-target-min flex items-center justify-center" title="Abrir Camadas">
+        <i data-lucide="layers" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Panorama GIS Clean Eye Emblem -->
+      <div id="brand-logo-box" class="h-16 sm:h-20 flex items-center justify-center shrink-0">
+        <img id="default-panorama-svg" src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Emblema Panorama GIS" class="h-11 sm:h-16 w-auto object-contain transition-all" />
+        <img id="custom-uploaded-logo" src="" alt="Logo Consultoria" class="hidden h-11 sm:h-16 w-auto object-contain p-1 rounded-lg bg-white" />
+      </div>
+
+      <div class="flex flex-col justify-center">
+        <div class="flex items-center gap-2">
+          <span id="brand-title" class="font-black text-lg sm:text-2xl tracking-tight text-white leading-none">PANORAMA <span class="text-[#00A0FF]">GIS</span></span>
+          <span id="mode-badge" class="hidden xs:inline-block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30 shadow-sm">
+            Modo Consultor
+          </span>
+        </div>
+        <p id="brand-subtitle" class="text-[11px] sm:text-xs text-slate-300 font-medium tracking-wide mt-0.5 sm:mt-1 truncate max-w-[180px] sm:max-w-none">Análise Socioambiental Expedita - ASE</p>
+      </div>
+
+      <div class="h-6 w-px bg-slate-800 mx-1.5 hidden md:block"></div>
+
+      <!-- Active Client & Project Selector -->
+      <div class="hidden xl:flex items-center gap-2 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-1.5">
+        <i data-lucide="folder-git-2" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+        <select id="scenario-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer pr-1">
+          <!-- Populated dynamically per logged-in consultancy -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Center/Right Actions (Clean Header & User Profile Dropdown) -->
+    <div class="flex items-center gap-1.5 sm:gap-3">
+      <!-- Mobile Drawer Trigger for Right Sidebar (Diagnóstico / Relatório) -->
+      <button id="btn-toggle-diagnosis-mobile" class="lg:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-emerald-400 hover:bg-slate-700 transition cursor-pointer touch-target-min flex items-center justify-center" title="Abrir Diagnóstico">
+        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Consultancy Area Button -->
+      <button id="btn-open-clients-hub" class="hidden sm:inline-flex px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all shadow-sm cursor-pointer" title="Área da Consultoria: Projetos, Clientes e Configuração da Marca">
+        Área da Consultoria
+      </button>
+
+      <!-- Client Portal Simulation Toggle Button -->
+      <button id="btn-toggle-portal" class="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#00A0FF]/20 hover:bg-[#00A0FF]/30 text-[#00A0FF] border border-[#00A0FF]/50 text-xs font-bold transition-all shadow-sm cursor-pointer">
+        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+        <span id="toggle-portal-text">Simular Visão do Cliente</span>
+      </button>
+
+      <div class="h-8 w-px bg-slate-800 mx-1 hidden sm:block"></div>
+
+      <!-- User Profile Widget & Dropdown (Right Corner - Exactly like user screenshot) -->
+      <div class="relative" id="user-menu-container">
+        <button id="btn-user-profile-menu" class="flex items-center gap-3 p-1 sm:px-3 sm:py-1.5 rounded-xl hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-700/80 text-left cursor-pointer group">
+          <!-- Circular Avatar with Initials (RM / RV) -->
+          <div id="user-avatar-circle" class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 via-blue-500 to-indigo-400 text-white font-extrabold text-sm flex items-center justify-center shadow-md shadow-indigo-950/60 shrink-0 ring-2 ring-indigo-500/30">
+            RV
+          </div>
+          <div class="hidden md:flex flex-col">
+            <span id="user-display-name" class="font-bold text-xs text-white leading-tight group-hover:text-[#00A0FF] transition-colors">Rodrigo Vasconcelos</span>
+            <span id="user-display-role" class="text-[10px] text-slate-400 font-medium">Consultor Técnico</span>
+          </div>
+          <i data-lucide="chevron-down" id="user-menu-chevron" class="w-4 h-4 text-slate-400 group-hover:text-white transition-transform duration-200"></i>
+        </button>
+
+        <!-- Floating Dropdown Menu (100% Solid Opaque Slate, High Contrast, z-[100]) -->
+        <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#0F172A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] p-2 z-[100] divide-y divide-slate-700/60 text-xs select-none">
+          <!-- Header Section: Minha Conta -->
+          <div class="px-3 py-2.5 bg-slate-950/70 rounded-xl mb-1 border border-slate-800/80">
+            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Minha Conta</p>
+            <p id="dropdown-user-name" class="font-extrabold text-white text-sm mt-0.5 truncate">Rodrigo Vasconcelos</p>
+            <p id="dropdown-user-email" class="text-[11px] text-[#00A0FF] font-mono truncate">consultor@exemplo.com.br</p>
+            <span id="dropdown-plan-badge" class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30">Plano Corporativo</span>
+          </div>
+
+          <!-- Action Links -->
+          <div class="py-1 space-y-0.5">
+            <button id="menu-item-clients-hub" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-200 font-semibold transition text-left cursor-pointer">
+              <i data-lucide="building-2" class="w-4 h-4 text-[#00A0FF]"></i>
+              <span>Área da Consultoria</span>
+            </button>
+            <button id="menu-item-provider-admin" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-amber-300 font-semibold transition text-left cursor-pointer">
+              <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+              <span>Painel Provedor (Admin)</span>
+            </button>
+            <button id="menu-item-landing" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-semibold transition text-left cursor-pointer">
+              <i data-lucide="home" class="w-4 h-4 text-sky-400"></i>
+              <span>Página Inicial</span>
+            </button>
+          </div>
+
+          <!-- Logout Section -->
+          <div class="pt-1">
+            <button id="btn-logout" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-rose-500/15 text-rose-300 font-bold transition text-left cursor-pointer">
+              <i data-lucide="log-out" class="w-4 h-4 text-rose-400"></i>
+              <span>Sair da Conta</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== CLIENT PORTAL BANNER (Hidden in Consultant Mode) ==================== -->
+  <div id="client-portal-banner" class="hidden bg-gradient-to-r from-slate-900 via-[#0F172A] to-[#1E293B] border-b border-[#00A0FF]/30 px-6 py-2.5 flex items-center justify-between z-20 relative">
+    <div class="flex items-center gap-3">
+      <span class="flex h-2.5 w-2.5 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A0FF] opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00A0FF]"></span>
+      </span>
+      <p class="text-xs font-medium text-sky-100">
+        <strong>Sala Digital Exclusiva do Cliente:</strong> Você está visualizando o portal exatamente como <span id="banner-client-name" class="underline font-bold">Cliente</span> vê ao abrir o link enviado pela consultoria.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="portal-url-preview" class="text-[11px] font-mono bg-slate-950/60 text-[#00A0FF] px-2.5 py-1 rounded border border-[#00A0FF]/30 hidden sm:inline-block">
+        —
+      </span>
+      <button id="btn-copy-portal-link" class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-md font-semibold flex items-center gap-1.5 border border-white/15 transition">
+        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Link Deste Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <!-- Backdrop cinza escuro para fechar gavetas laterais em mobile -->
+  <div id="webgis-drawer-backdrop" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-30 transition-opacity"></div>
+
+  <main class="flex webgis-main-container w-full relative overflow-hidden">
+
+    <!-- ==================== LEFT SIDEBAR: LAYERS & PROJECT TOOLS ==================== -->
+    <aside id="left-sidebar" class="webgis-drawer-left w-80 bg-[#0F172A] border-r border-white/[0.08] flex flex-col justify-between z-20 shrink-0 transition-all duration-300">
+      <!-- Mobile Close Drawer Header -->
+      <div class="lg:hidden p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span class="font-extrabold text-sm text-white">Camadas & Ferramentas</span>
+        </div>
+        <button id="btn-close-left-drawer" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer touch-target-min" title="Fechar Gaveta">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
+
+        <!-- Consultant Tools Card (Hidden in Client Mode) -->
+        <div id="consultant-tools-card" class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between gap-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-[#00A0FF] shrink-0"></i>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300 truncate" title="Camadas do Empreendimento">
+                Camadas
+              </span>
+              <span id="layers-quota-badge" class="whitespace-nowrap shrink-0 text-[11px] font-mono px-2 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 font-bold">0 / 5</span>
+            </div>
+
+          </div>
+          <!-- Primary Action: Import KML / Shapefile / GeoJSON -->
+          <label id="upload-btn-wrapper" for="file-upload" class="btn-ase-primary cursor-pointer w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold active:scale-95 group">
+            <i data-lucide="upload-cloud" class="w-4 h-4 text-white shrink-0 group-hover:-translate-y-0.5 transition-transform"></i>
+            <span>+ Adicionar Camada (KML/SHP)</span>
+            <input id="file-upload" type="file" accept=".kml,.kmz,.zip,.shp,.geojson,.json" class="hidden" />
+          </label>
+
+          <!-- Draw Geometry Options: Polygon, Line, Point -->
+          <div class="grid grid-cols-3 gap-1.5">
+            <button id="btn-draw-polygon" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Desenhar Polígono no mapa">
+              <i data-lucide="pentagon" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Polígono
+            </button>
+            <button id="btn-draw-line" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Desenhar Linha/Traçado no mapa">
+              <i data-lucide="spline" class="w-3.5 h-3.5 text-cyan-400"></i> Linha
+            </button>
+            <button id="btn-draw-point" class="btn-ase-tool flex flex-col items-center justify-center gap-1 py-2 px-1.5 text-[11px] font-semibold cursor-pointer" title="Marcar Ponto no mapa">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-400"></i> Ponto
+            </button>
+          </div>
+
+          <!-- Quick CAR Lookup Simulation -->
+          <div class="pt-1">
+            <label class="text-[11px] text-slate-400 block mb-1">Recibo do CAR / Matrícula do imóvel (opcional):</label>
+            <div class="flex gap-1.5">
+              <input id="car-input" type="text" placeholder="Ex.: GO-5200000-XXXXXXXX" class="w-full bg-[#27394a] border border-slate-600/70 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00A0FF]" />
+              <button id="btn-search-car" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition" title="Salvar no projeto">
+                <i data-lucide="search" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer Tree: Project Layers (AtÃ©é 5 por projeto) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="list" class="w-3.5 h-3.5 text-[#00A0FF]"></i> Camadas Adicionadas
+            </h3>
+            <button id="btn-run-all-analysis" class="btn-ase-primary shrink-0 text-[11px] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 group" title="Executar cruzamento socioambiental de todas as camadas do projeto">
+              <i data-lucide="play" class="w-3 h-3 fill-white text-white group-hover:scale-110 transition-transform"></i> <span>Analisar Todas</span>
+            </button>
+          </div>
+          <div class="space-y-2" id="project-layers-list">
+            <div class="p-3 rounded-lg border border-dashed border-slate-700 text-xs text-slate-400 text-center">
+              Nenhuma camada adicionada. Importe ou desenhe acima (até 5 camadas).
+            </div>
+          </div>
+        </div>
+
+        <!-- Bases oficiais: consumidas AO VIVO direto dos órgãos (lista gerada por app.js a partir de govlayers.js) -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-400"></i> Bases Oficiais (Governo)
+            </h3>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 font-mono">Ao vivo</span>
+          </div>
+          <div id="gov-layers-list" class="space-y-1.5"></div>
+          <p class="text-[10px] text-slate-500 mt-2 leading-relaxed">Camadas lidas diretamente dos servidores oficiais (WMS/WFS), sem cópia local: sempre na versão publicada pelo órgão. Clique no mapa para identificar feições.</p>
+        </div>
+      </div>
+
+      <!-- Basemap Switcher Footer -->
+      <div class="p-3.5 border-t border-white/[0.08] bg-[#0F172A]">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">Mapa Base (Fundo)</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" data-basemap="satellite" class="basemap-btn active">Satélite HD</button>
+          <button type="button" data-basemap="topo" class="basemap-btn">Topográfico</button>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- ==================== CENTER: INTERACTIVE MAP ==================== -->
+    <section class="flex-1 relative h-full bg-[#020617]">
+      <div id="map" class="w-full h-full z-10"></div>
+
+      <!-- Global SVG Pattern for Leaflet Hatching (Red Hatching for Buffer) -->
+      <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
+        <defs>
+          <pattern id="red-hatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#ef4444" fill-opacity="0.12"></rect>
+            <line x1="0" y1="0" x2="0" y2="10" stroke="#ef4444" stroke-width="2.5" stroke-opacity="0.85"></line>
+          </pattern>
+        </defs>
+      </svg>
+
+      <!-- Floating Map Toolbar (Top Left over Map) -->
+      <div class="absolute top-3 sm:top-4 left-3 sm:left-4 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 rounded-xl p-1.5 shadow-xl max-w-[calc(100vw-1.5rem)]">
+        <button id="btn-zoom-property" class="btn-ase-tool flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer touch-target-min" title="Enquadrar Imóvel">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-[#00A0FF]"></i> <span class="hidden xs:inline">Enquadrar</span>
+        </button>
+        <button id="btn-measure-ruler" class="btn-ase-tool flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer touch-target-min" title="Régua de Medição de Distâncias">
+          <i data-lucide="ruler" class="w-3.5 h-3.5 text-[#00A0FF]"></i> <span id="ruler-btn-label">Régua</span>
+        </button>
+        <button id="btn-measure-tool" class="btn-ase-tool flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer touch-target-min" title="Clique em feições para inspecionar">
+          <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-[#00A0FF]"></i> <span class="hidden xs:inline">Inspecionar</span>
+        </button>
+        <button id="btn-Add-comment" class="btn-ase-tool flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer touch-target-min" title="Adicionar nota de revisão no mapa">
+          <i data-lucide="message-square-plus" class="w-3.5 h-3.5 text-amber-400"></i> <span id="comment-btn-label" class="hidden sm:inline">Adicionar Nota</span>
+        </button>
+      </div>
+
+      <!-- Drawing Helper Banner (Hidden unless drawing) -->
+      <div id="drawing-helper" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-[#0F172A]/85 backdrop-blur-[10px] border border-emerald-500/40 text-emerald-100 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+        <i data-lucide="pen-tool" class="w-4 h-4 text-[#00A0FF] animate-bounce"></i>
+        <span id="drawing-instructions"><strong>Modo Desenho:</strong> Clique no mapa para marcar os pontos.</span>
+        <button id="btn-finish-draw" class="btn-ase-primary text-xs font-semibold px-3 py-1.5 rounded-md cursor-pointer">Concluir Camada</button>
+        <button id="btn-cancel-draw" class="text-slate-300 hover:text-white underline ml-1 cursor-pointer">Cancelar</button>
+      </div>
+
+      <!-- Ruler Measurement Banner (Hidden unless measuring) -->
+      <div id="measure-banner" class="hidden absolute top-4 right-4 z-30 bg-[#0F172A]/85 backdrop-blur-[10px] border border-emerald-500/40 rounded-xl px-4 py-2.5 shadow-2xl flex items-center gap-3 text-xs">
+        <div class="w-7 h-7 rounded-lg bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/40 flex items-center justify-center shrink-0">
+          <i data-lucide="ruler" class="w-4 h-4"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            Régua de Medição
+            <span id="measure-badge-state" class="text-[9px] px-1.5 py-0.2 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 uppercase font-mono font-bold">AtÃ©iva</span>
+          </span>
+          <span id="measure-instructions" class="text-[11px] text-slate-300">Clique no mapa para marcar o ponto inicial.</span>
+        </div>
+        <div class="h-6 w-px bg-slate-600/80 mx-1"></div>
+        <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-white bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/80">
+          <span class="text-slate-400 text-[10px]">TOTAL:</span>
+          <span id="measure-total-val" class="text-[#00A0FF] text-sm">0 m</span>
+        </div>
+        <button id="btn-measure-finish" class="hidden px-2.5 py-1 rounded-lg bg-[#00A0FF]/20 hover:bg-[#008ee0]/30 text-[#00A0FF] border border-[#00A0FF]/40 text-xs font-bold transition cursor-pointer">
+          Concluir
+        </button>
+        <button id="btn-measure-clear" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer" title="Limpar pontos">
+          Limpar
+        </button>
+        <button id="btn-measure-close" class="p-1 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition cursor-pointer" title="Fechar régua">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Floating Bottom Coordinates & Scale Bar -->
+      <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-20 flex items-center gap-2 sm:gap-4 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-mono text-slate-300 shadow-lg max-w-[calc(100vw-7rem)] overflow-hidden">
+        <div class="hidden sm:flex items-center gap-1.5 shrink-0">
+          <span class="w-2 h-2 rounded-full bg-[#00A0FF]"></span>
+          <span>Datum: <strong>SIRGAS 2000</strong></span>
+        </div>
+        <div class="hidden sm:block h-3 w-px bg-slate-700"></div>
+        <div id="mouse-coords" class="truncate">Lat: -16.7654° | Lon: -47.6123°</div>
+      </div>
+
+      <!-- Floating Map Dynamic Legend (Bottom Right over Map) -->
+      <div id="map-legend-wrapper" class="absolute bottom-4 right-4 z-20 flex flex-col items-end">
+        <!-- Collapsible Legend Card -->
+        <div id="map-legend-card" class="hidden mb-2 w-64 sm:w-72 bg-[#0F172A]/85 backdrop-blur-[10px] border border-white/10 rounded-2xl p-3 sm:p-3.5 shadow-2xl text-xs select-none max-h-72 sm:max-h-80 flex flex-col transition-all duration-200">
+          <!-- Legend Header -->
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-600/60 shrink-0">
+            <div class="flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i>
+              <span class="font-extrabold text-white text-xs uppercase tracking-wider">Legenda do Mapa</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="legend-badge-count" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30">0 ativas</span>
+              <button id="btn-close-legend" class="p-1 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer" title="Minimizar legenda">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Scrollable List of Active Layers -->
+          <div id="map-legend-items" class="space-y-3 overflow-y-auto custom-scrollbar flex-1 pr-1">
+            <!-- Dynamic Active Layers populated by updateMapLegend() -->
+          </div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button id="btn-toggle-legend" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0F172A]/85 hover:bg-[#1E293B] backdrop-blur-[10px] border border-white/10 text-xs font-bold text-white shadow-xl transition-all cursor-pointer group active:scale-95" title="Abrir/Fechar Legenda das Camadas AtÃ©ivas">
+          <i data-lucide="list" class="w-4 h-4 text-[#00A0FF] group-hover:scale-110 transition-transform"></i>
+          <span>Legenda</span>
+          <span id="legend-btn-badge" class="px-1.5 py-0.5 rounded-full bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30 text-[10px] font-mono font-bold">0</span>
+          <i data-lucide="chevron-up" id="legend-chevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200"></i>
+        </button>
+      </div>
+    </section>
+    <!-- ==================== RIGHT SIDEBAR: AUTOMATED DIAGNOSIS & PORTAL APPROVAL ==================== -->
+    <aside id="right-sidebar" class="webgis-drawer-right w-96 bg-[#0F172A] border-l border-white/[0.08] flex flex-col justify-between z-20 shrink-0 overflow-y-auto custom-scrollbar">
+      <!-- Mobile Close Drawer Header -->
+      <div class="lg:hidden p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
+          <span class="font-extrabold text-sm text-white">Diagnóstico Territorial</span>
+        </div>
+        <button id="btn-close-right-drawer" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer touch-target-min" title="Fechar Gaveta">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-5 space-y-5">
+
+        <!-- Header of Diagnosis -->
+        <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#00A0FF] bg-[#00A0FF]/15 px-2 py-0.5 rounded border border-[#00A0FF]/30" id="active-client-pill">
+                Projeto
+              </span>
+            </div>
+            <h2 id="prop-title" class="text-base font-bold text-white">Nenhum projeto selecionado</h2>
+            <p id="prop-location" class="text-xs text-slate-400">Área da Consultoria → Cadastrar Novo Projeto</p>
+          </div>
+          <div id="overall-risk-badge" class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1.5 shrink-0">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Sem análise
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid (Calculated in Real Time with Turf.js) -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Área Total</span>
+            <span id="kpi-area" class="text-sm font-bold font-mono text-white">—</span>
+            <span id="kpi-modulos" class="text-[10px] text-slate-400 block mt-0.5">—</span>
+          </div>
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Perímetro</span>
+            <span id="kpi-perimeter" class="text-sm font-bold font-mono text-white">—</span>
+            <span id="kpi-vertices" class="text-[10px] text-slate-400 block mt-0.5">—</span>
+          </div>
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Bases com Alerta</span>
+            <span id="kpi-rl" class="text-sm font-bold font-mono text-[#00A0FF]">—</span>
+            <span id="kpi-rl-min" class="text-[10px] text-[#00A0FF]/80 block mt-0.5">bases consultadas</span>
+          </div>
+        </div>
+
+        <!-- Automated National Crossing Matrix -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="scan-search" class="w-4 h-4 text-[#00A0FF]"></i> Cruzamento com Bases Nacionais
+            </h3>
+            <span id="crossing-timestamp" class="text-[10px] text-slate-400 font-mono">Processado em 0.8s</span>
+          </div>
+
+          <div id="diagnosis-cards-container" class="space-y-2.5">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </div>
+
+        <!-- AÃ§Ãµes de Entrega do Estudo -->
+        <div class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-4 space-y-2.5">
+          <button id="btn-open-report-2" class="btn-ase-primary w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+            <i data-lucide="printer" class="w-4 h-4"></i> Gerar Laudo PDF
+          </button>
+          <button id="btn-download-layers-package" class="btn-ase-secondary w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+            <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Baixar Camadas (KML/SHP)
+          </button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==================== NEW MODAL: CONSULTANCY AREA & PROJECT REGISTRATION (ERANI BASTOS / PROGEA) ==================== -->
+  <div id="modal-clients-hub" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-5xl w-full p-6 shadow-2xl space-y-6 my-8">
+      <!-- Header with Consultancy Switcher & Quota Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30">
+            <i data-lucide="building-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="hub-consultancy-title" class="text-lg font-extrabold text-white">Área da Consultoria</h3>
+              <span id="hub-plan-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/30">—</span>
+            </div>
+            <p class="text-xs text-slate-400">Gerencie seu plano, cadastre projetos (do mesmo cliente ou clientes diferentes) e compartilhe o portal com sua marca.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="btn-close-clients-hub" class="text-slate-400 hover:text-white p-1" title="Fechar (Esc)">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- HUB NAVIGATION TABS -->
+      <div class="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
+        <button type="button" data-hub-tab="projects" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#00A0FF]/20 text-[#00A0FF] border border-[#00A0FF]/40">
+          <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+          <span>Projetos & Clientes</span>
+        </button>
+        <button type="button" data-hub-tab="branding" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="palette" class="w-4 h-4 text-[#00A0FF]"></i>
+          <span>Marca da Consultoria</span>
+        </button>
+        <button type="button" data-hub-tab="team" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="users" class="w-4 h-4 text-cyan-400"></i>
+          <span>Equipe Técnica</span>
+        </button>
+        <button type="button" data-hub-tab="quota" class="hub-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+          <i data-lucide="gauge" class="w-4 h-4 text-amber-400"></i>
+          <span>Franquia & Plano</span>
+        </button>
+      </div>
+
+      <!-- TAB PANE 1: PROJETOS & CLIENTES (DEFAULT) -->
+      <div id="hub-tab-pane-projects" class="space-y-5">
+        <!-- Add New Project Form (Supports Same Client or New Client) -->
+        <div class="bg-slate-800/50 border border-[#00A0FF]/30 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#00A0FF] flex items-center gap-1.5">
+              <i data-lucide="folder-plus" class="w-4 h-4"></i> Cadastrar Novo Projeto na Carteira da Consultoria
+            </h4>
+            <span class="text-[11px] text-slate-400">Você pode cadastrar vários imóveis para um mesmo cliente ou para clientes diferentes</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+            <div class="sm:col-span-4">
+              <label class="text-slate-300 font-semibold block mb-1">1. Cliente Final (Mesmo ou Novo)</label>
+              <input id="new-client-name" list="existing-clients-datalist" type="text" placeholder="Digite ou selecione um cliente..." class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+              <datalist id="existing-clients-datalist">
+              </datalist>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="text-slate-300 font-semibold block mb-1">2. Nome do Projeto / Gleba</label>
+              <input id="new-client-project" type="text" placeholder="Ex: Fazenda São José (Mat. 4102)" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="text-slate-300 font-semibold block mb-1">3. Município / UF</label>
+              <input id="new-client-city" type="text" placeholder="Ex: Jataí / GO" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            </div>
+            <div class="sm:col-span-3 flex items-end">
+              <button id="btn-create-client-portal" class="btn-ase-primary w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Cadastrar & Abrir no Mapa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Client Projects Table -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Projetos Cadastrados por esta Consultoria</h4>
+            <span class="text-[11px] text-slate-400">Analise no mapa, exporte Laudo/KML ou compartilhe o Portal com o seu cliente</span>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-800 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700">
+                  <th class="py-3 px-4 font-bold">Cliente Final</th>
+                  <th class="py-3 px-4 font-bold">Projeto / Imóvel</th>
+                  <th class="py-3 px-4 font-bold">Link de Compartilhamento (Cliente)</th>
+                  <th class="py-3 px-4 font-bold">PIN</th>
+                  <th class="py-3 px-4 font-bold text-right">Ações do Consultor</th>
+                </tr>
+              </thead>
+              <tbody id="clients-hub-tbody" class="divide-y divide-slate-700/60 bg-[#243545]/60">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 2: MARCA DA CONSULTORIA (WHITE-LABEL) -->
+      <div id="hub-tab-pane-branding" class="space-y-4 hidden">
+        <div id="hub-whitelabel-section" class="bg-slate-950/90 border border-[#00A0FF]/30 rounded-xl p-5 space-y-4 shadow-inner">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded-lg bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30">
+                <i data-lucide="palette" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Marca Própria da Consultoria (Identidade Visual)</h4>
+                <p class="text-xs text-slate-400">Configure sua logomarca, razão social e ART para aparecer nos laudos e no portal dos seus clientes</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#00A0FF]/15 text-[#00A0FF] border border-[#00A0FF]/30 font-bold">White-Label</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 text-xs">
+            <!-- Logo Upload Box with Preview -->
+            <div class="md:col-span-4 bg-[#243545]/90 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-between text-center space-y-3">
+              <span class="text-slate-300 font-semibold block text-left w-full">Logomarca da Consultoria</span>
+              
+              <div id="hub-logo-preview-box" class="w-full h-24 rounded-lg bg-slate-950 border border-dashed border-slate-700 flex items-center justify-center p-2 overflow-hidden relative">
+                <img id="hub-logo-preview" src="" alt="Sua Logo" class="hidden max-h-full max-w-full object-contain" />
+                <div id="hub-logo-empty" class="text-slate-500 flex flex-col items-center gap-1">
+                  <i data-lucide="image" class="w-6 h-6 opacity-40"></i>
+                  <span class="text-[11px]">Nenhuma logo personalizada</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 w-full pt-1">
+                <label for="hub-logo-upload" class="flex-1 cursor-pointer flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#00A0FF] hover:bg-[#00A0FF] text-white font-bold transition text-xs shadow-sm">
+                  <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                  <span>Enviar Logo</span>
+                  <input id="hub-logo-upload" type="file" accept="image/*" class="hidden" />
+                </label>
+                <button id="btn-hub-reset-logo" type="button" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs transition border border-slate-700" title="Remover Logo Customizada">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <span class="text-[10px] text-slate-500">Formatos aceitos: PNG, JPG ou SVG (máx. 350 KB)</span>
+            </div>
+
+            <!-- Text Inputs & Actions -->
+            <div class="md:col-span-8 flex flex-col justify-between space-y-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Nome da Empresa de Consultoria / Razão Social</label>
+                <input id="hub-company-name" type="text" placeholder="Ex: VerdeVivo Consultoria & Engenharia Ambiental" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF] font-medium" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Slogan / Especialidade no Cabeçalho</label>
+                  <input id="hub-company-slogan" type="text" placeholder="Ex: Engenharia e Soluções Territoriais" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+                </div>
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Responsável Técnico (CREA / CRBio / CFT)</label>
+                  <input id="hub-rt-name" type="text" placeholder="Ex: Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+                </div>
+              </div>
+
+              <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80">
+                <button id="btn-hub-reset-to-default-brand" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="Redefinir campos e logomarca para o padr&#227;o original PANORAMA GIS">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span>Restaurar Padr&#227;o PANORAMA</span>
+                </button>
+                <div class="flex items-center gap-3">
+                  <span id="hub-brand-save-status" class="text-[11px] text-[#00A0FF] font-medium"></span>
+                  <button id="btn-hub-save-brand" type="button" class="btn-ase-primary px-5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Salvar Marca da Consultoria</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 3: EQUIPE TÉCNICA -->
+      <div id="hub-tab-pane-team" class="space-y-4 hidden">
+        <div id="team-box" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-[#00A0FF]"></i> Equipe e Acessos</h4>
+            <span id="team-seats-text" class="text-[11px] font-mono text-[#00A0FF]">—</span>
+          </div>
+          <div id="team-list" class="space-y-1.5 text-xs"></div>
+          <div id="team-add-form" class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+            <input id="team-new-name" type="text" placeholder="Nome do colaborador" class="sm:col-span-4 bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            <input id="team-new-email" type="email" placeholder="E-mail do colaborador" class="sm:col-span-5 bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+            <button id="btn-team-add" class="btn-ase-primary sm:col-span-3 py-2 px-3 rounded-lg text-xs font-semibold cursor-pointer">Convidar por e-mail</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 4: FRANQUIA & PLANO -->
+      <div id="hub-tab-pane-quota" class="space-y-4 hidden">
+        <!-- 3 SUBSCRIPTION PLANS SELECTOR (Essencial / Profissional / Corporativo) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="award" class="w-4 h-4 text-[#00A0FF]"></i> Seu plano (a troca de plano é feita pelo gestor do Panorama GIS)
+            </span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Plano Iniciante -->
+            <div data-plan="iniciante" class="plan-card cursor-pointer rounded-xl p-4 border border-slate-700 bg-slate-950/60 hover:border-emerald-500/50 transition flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-extrabold text-slate-200 text-sm">Iniciante (ASE)</span>
+                  <span class="plan-status-badge text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">20 Diagnósticos/mês</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Ideal para perito autônomo. 1 camada por vez, buffer até 5 km, laudos em PDF e histórico por 90 dias.</p>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                <span class="text-slate-400">R$ 149/mês &bull; 1 Usuário</span>
+                <span class="plan-select-label text-emerald-400 font-bold">Selecionar</span>
+              </div>
+            </div>
+
+            <!-- Plano Profissional ⭐ O Campeão -->
+            <div data-plan="profissional" class="plan-card cursor-pointer rounded-xl p-4 border-2 border-emerald-500 bg-emerald-500/10 transition flex flex-col justify-between relative shadow-lg shadow-emerald-950/30">
+              <div class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] uppercase tracking-wider">
+                ⭐ O Campeão
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-extrabold text-white text-sm">Profissional (ASE)</span>
+                  <span class="plan-status-badge text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500 text-slate-950">60 Diagnósticos/mês</span>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">Buffer regulatório até 10 km, <strong>Logo personalizável</strong> no laudo, Portal do Cliente com Link/PIN e histórico permanente.</p>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[11px]">
+                <span class="text-emerald-400 font-bold">R$ 297/mês &bull; Até 3 Usuários</span>
+                <span class="plan-select-label text-emerald-400 font-bold">Plano Ativo ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quota Usage Progress Bar (out of 20 projects) -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1 flex-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-4 h-4 text-[#00A0FF]"></i> Franquia de Projetos Cadastrados na Assinatura
+              </span>
+              <span id="hub-quota-text" class="font-mono font-bold text-[#00A0FF]">—</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="hub-quota-bar" class="bg-gradient-to-r from-[#00A0FF] to-[#008ee0] h-full rounded-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-400 sm:border-l sm:border-slate-800 sm:pl-4 max-w-xs">
+            Resp. Técnico vinculado aos Laudos:<br/>
+            <strong id="hub-rt-display" class="text-slate-200">—</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 1: CONSULTANCY BRAND CUSTOMIZER (WITH LOGO UPLOAD) ==================== -->
+  <div id="modal-whitelabel" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-[#00A0FF]/15 text-[#00A0FF]">
+            <i data-lucide="palette" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Marca Própria da Consultoria</h3>
+            <p class="text-xs text-slate-400">Personalize a logomarca e os dados que aparecem para o seu cliente</p>
+          </div>
+        </div>
+        <button id="btn-close-whitelabel" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Logo Upload Option -->
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1.5">Logomarca da Consultoria (PNG / JPG / SVG)</label>
+          <div class="flex items-center gap-3">
+            <label for="wl-logo-upload" class="cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[#00A0FF] font-semibold transition">
+              <i data-lucide="image-plus" class="w-4 h-4"></i> Escolher Imagem da Logo
+              <input id="wl-logo-upload" type="file" accept="image/*" class="hidden" />
+            </label>
+            <button id="btn-reset-logo" class="text-slate-400 hover:text-slate-200 underline text-[11px]">Usar ícone padrão</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Nome da Empresa de Consultoria</label>
+          <input id="wl-company-name" type="text" value="VerdeVivo Consultoria & Engenharia Ambiental" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Slogan / Especialidade no Cabeçalho</label>
+          <input id="wl-company-slogan" type="text" value="Ampliando a Visão do seu Negócio" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Responsável Técnico (CREA / CRBio / CFT)</label>
+          <input id="wl-rt-name" type="text" value="Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-[#00A0FF]" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-wl-reset-to-default" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5 cursor-pointer" title="Restaurar padrÃ£o PANORAMA GIS"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i><span>Restaurar PadrÃ£o</span></button>
+        <button id="btn-save-whitelabel" class="btn-ase-primary px-4 py-2 rounded-lg text-xs font-semibold">
+          Salvar Marca da Consultoria
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: PRINTABLE TECHNICAL REPORT (LAUDO PDF) ==================== -->
+  
+  <!-- ==================== MODAL: EXPORTAR PACOTE DE CAMADAS (KML/SHP) ==================== -->
+  <div id="modal-download-layers" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-5 h-5 text-emerald-400"></i> Baixar Camadas do Projeto
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">SIRGAS 2000 • Injeção automática com buffer e feições recortadas</p>
+        </div>
+        <button id="btn-close-download-layers" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Preview of Layers Injected -->
+      <div class="bg-[#1E293B] rounded-xl p-3.5 border border-white/[0.08] space-y-2.5 text-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Camadas Injetadas no Pacote:</span>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-sky-400 shrink-0"></span> Empreendimento:</span>
+            <span id="export-summary-proj" class="font-mono text-slate-300 font-semibold truncate max-w-[220px]">—</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-rose-500/80 shrink-0"></span> Raio de Análise:</span>
+            <span id="export-summary-buffer" class="font-mono text-amber-300 font-semibold">—</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-200">
+            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded bg-emerald-400 shrink-0"></span> Feições Recortadas:</span>
+            <span id="export-summary-clipped" class="font-mono text-emerald-400 font-semibold">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format Selection Buttons -->
+      <div class="space-y-2.5 pt-1">
+        <button id="btn-export-kml-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <i data-lucide="globe" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white flex items-center gap-2">
+                Pacote Completo KML (.kml)
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-semibold">Recomendado</span>
+              </div>
+              <div class="text-[11px] text-slate-400">Pastas separadas (Empreendimento, Buffer, RestriÃ§Ãµes) para Google Earth & QGIS</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button id="btn-export-shp-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-sky-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-sky-500/15 text-sky-400 border border-sky-500/30">
+              <i data-lucide="archive" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">Shapefile Compactado (.zip)</div>
+              <div class="text-[11px] text-slate-400">Arquivos vetoriais (.shp, .shx, .dbf, .prj) com tabela de atributos para SIG</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button id="btn-export-geojson-action" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-purple-500/50 transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/30">
+              <i data-lucide="code-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">GeoJSON Geoespacial (.geojson)</div>
+              <div class="text-[11px] text-slate-400">FeatureCollection padronizada para QGIS, ArcGIS e geoprocessamento</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="modal-report" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white text-slate-900 rounded-2xl max-w-3xl w-full p-8 shadow-2xl my-8 space-y-6 relative" id="printable-report-area">
+      <!-- Non-printable top action bar -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-4 no-print">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#008ee0] bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+          Pré-visualização do Laudo Técnico Automatizado
+        </span>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00A0FF] hover:bg-[#008ee0] text-white text-xs font-bold shadow transition">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / Salvar PDF
+          </button>
+          <button id="btn-close-report" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+            Fechar
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Header -->
+      <div class="flex items-start justify-between border-b-2 border-slate-900 pb-5">
+        <div>
+          <p id="report-consultancy-name" class="text-sm font-extrabold uppercase tracking-wider text-[#008ee0]">VerdeVivo Consultoria & Engenharia Ambiental</p>
+          <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Relatório de Triagem e Viabilidade Socioambiental</h1>
+          <p id="report-rt-info" class="text-xs text-slate-500 mt-1">Resp. Técnico: Eng. Florestal Rodrigo Vasconcelos — CREA 123456/D</p>
+        </div>
+        <div class="text-right text-xs text-slate-500 font-mono">
+          <div>Gerado via <strong>Panorama GIS</strong></div>
+          <div class="text-[10px] text-slate-400">Ampliando a Visão do seu Negócio</div>
+          <div id="report-date">Data: 20/10/2026</div>
+        </div>
+      </div>
+
+      <!-- Property Info Table -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+        <div>
+          <span class="text-slate-500 block">Empreendimento / Imóvel</span>
+          <strong id="report-prop-name" class="text-slate-900 text-sm">—</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Município / Bioma</span>
+          <strong id="report-prop-loc" class="text-slate-900">—</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Área Calculada</span>
+          <strong id="report-prop-area" class="text-slate-900 font-mono">1.428,5 ha</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Interessado / Cliente</span>
+          <strong id="report-client-name" class="text-slate-900">—</strong>
+        </div>
+      </div>
+
+      <!-- Crossing Table -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Quadro Síntese de Cruzamento Espacial (Bases Oficiais)</h3>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 border-y border-slate-300">
+              <th class="py-2.5 px-3 font-bold">Base Oficial / Órgão</th>
+              <th class="py-2.5 px-3 font-bold">Fonte / AtÃ©ualização</th>
+              <th class="py-2.5 px-3 font-bold">Resultado na Área</th>
+              <th class="py-2.5 px-3 font-bold text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="report-table-body" class="divide-y divide-slate-200">
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Conclusion Box -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Parecer Técnico Preliminar</h4>
+        <p id="report-conclusion-text" class="text-xs text-slate-700 leading-relaxed"></p>
+      </div>
+
+      <!-- Signature Footer -->
+      <div class="pt-6 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+        <div>Documento gerado eletronicamente com coordenadas aferidas no sistema geodésico SIRGAS 2000.</div>
+        <div class="font-mono">Autenticação: #PGIS-2026-9941A</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NEW MODAL 3: SAAS PROVIDER MASTER ADMIN PANEL (FOR RODRIGO) ==================== -->
+  <div id="modal-provider-admin" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0F172A] border border-amber-500/40 rounded-2xl max-w-6xl w-full p-6 shadow-2xl space-y-6 my-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h3 class="text-lg font-extrabold text-white">Painel Master do Provedor — Panorama GIS</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                Sigilo LGPD AtÃ©ivo (Sem acesso aos mapas privados das consultorias)
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">Gerencie as empresas assinantes, planos contratados, consumo de franquia, acessos simultâneos e a saúde das fontes oficiais.</p>
+          </div>
+        </div>
+        <button id="btn-close-provider-admin" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Provider Business KPIs (MRR, Active Consultancies, Total Projects Quota, Server Status) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Receita Recorrente Mensal (MRR)</span>
+            <i data-lucide="dollar-sign" class="w-4 h-4 text-[#00A0FF]"></i>
+          </div>
+          <div id="admin-kpi-mrr" class="text-xl font-extrabold font-mono text-[#00A0FF]">—</div>
+          <div id="admin-kpi-arr" class="text-[11px] text-slate-500 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Consultorias Assinantes</span>
+            <i data-lucide="building-2" class="w-4 h-4 text-[#00A0FF]"></i>
+          </div>
+          <div id="admin-kpi-tenants" class="text-xl font-extrabold font-mono text-white">—</div>
+          <div id="admin-kpi-tenants-detail" class="text-[11px] text-slate-400 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Consumo Global de Projetos</span>
+            <i data-lucide="hard-drive" class="w-4 h-4 text-sky-400"></i>
+          </div>
+          <div id="admin-kpi-projects" class="text-xl font-extrabold font-mono text-white">—</div>
+          <div id="admin-kpi-seats" class="text-[11px] text-slate-400 mt-1">—</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Bases Nacionais (IBAMA/ICMBio/INCRA)</span>
+            <i data-lucide="database" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div id="admin-kpi-sources" class="text-sm font-bold text-slate-300 flex items-center gap-1.5 mt-1">Não verificado</div>
+          <button id="btn-check-sources" class="text-[11px] text-amber-300 hover:underline mt-1.5">Verificar fontes agora</button>
+          <div id="admin-kpi-sources-detail" class="text-[10px] text-slate-500 mt-1"></div>
+        </div>
+      </div>
+
+      <!-- Onboard New Consultancy Form -->
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-4 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+          <i data-lucide="plus-square" class="w-4 h-4"></i> Cadastrar Nova Empresa de Consultoria Assinante (Seu Cliente B2B)
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+          <div class="sm:col-span-3">
+            <label class="text-slate-300 font-semibold block mb-1">Nome da Consultoria</label>
+            <input id="admin-new-cons-name" type="text" placeholder="Ex: Cerrado Geo Consultoria" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">CNPJ</label>
+            <input id="admin-new-cons-cnpj" type="text" placeholder="00.000.000/0001-00" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-3">
+            <label class="text-slate-300 font-semibold block mb-1">E-mail / Responsável</label>
+            <input id="admin-new-cons-email" type="text" placeholder="contato@cerradogeo.com.br" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">Plano Contratado</label>
+            <select id="admin-new-cons-plan" class="w-full bg-[#243545] border border-slate-600/70 rounded-lg px-2.5 py-2 text-slate-100 font-semibold focus:outline-none focus:border-amber-500">
+              <option value="essencial">Essencial (5 Proj. - R$ 290)</option>
+              <option value="profissional" selected>Profissional (20 Proj. - R$ 590)</option>
+              <option value="corporativo">Corporativo (Ilim. - R$ 990)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 flex items-end">
+            <button id="btn-admin-add-consultancy" class="w-full py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold flex items-center justify-center gap-1.5 transition shadow-lg">
+              <i data-lucide="key" class="w-4 h-4"></i> Liberar Acesso
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consultancies Control Table (Zero private client/map data exposed, only commercial & quota control) -->
+      <div>
+        <div class="flex items-center justify-between mb-2.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Carteira de Empresas de Consultoria Assinantes</h4>
+          <span class="text-[11px] text-slate-400">Controle de planos, consumo de franquia, mensalidade e bloqueio/liberação de acesso</span>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-800 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-800/90 text-slate-300 border-b border-slate-700">
+                <th class="py-3 px-4 font-bold">Empresa de Consultoria / CNPJ</th>
+                <th class="py-3 px-4 font-bold">Contato / Login Admin</th>
+                <th class="py-3 px-4 font-bold">Plano Contratado</th>
+                <th class="py-3 px-4 font-bold">Uso da Franquia (Sigiloso)</th>
+                <th class="py-3 px-4 font-bold">Mensalidade / Venc.</th>
+                <th class="py-3 px-4 font-bold">Status</th>
+                <th class="py-3 px-4 font-bold text-right">Controle do Provedor</th>
+              </tr>
+            </thead>
+            <tbody id="provider-admin-tbody" class="divide-y divide-slate-700/60 bg-[#243545]/60">
+              <!-- Populated dynamically by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-[#0F172A] border border-emerald-500/40 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs font-medium">
+    <i data-lucide="check-circle" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
+    <span id="toast-message">Ação concluída com sucesso!</span>
+  </div>
+
+  <!-- Supabase (login, perfis, planos, projetos) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script charset="UTF-8" src="config.js"></script>
+  <!-- Camadas oficiais ao vivo (WMS/WFS direto dos órgãos) -->
+  <script charset="UTF-8" src="govlayers.js"></script>
+  <!-- Lógica do app -->
+  <script charset="UTF-8" src="app.js"></script>
+</body>
+</html>
+
+
+

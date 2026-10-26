@@ -1,0 +1,34 @@
+# Dependências e Node
+node_modules/
+package-lock.json
+
+# Ambiente e segredos locais
+.env
+.env*.local
+.env.production
+.env.development
+
+# Rascunhos, caches e backups locais
+_backups/
+scratch/
+etl_probe_report.txt
+*.tmp
+*.log
+
+# Arquivos pesados temporários de ETL e Geometrias locais
+etl/test_download/
+*.zip
+*.shp
+*.dbf
+*.shx
+*.cpg
+*.prj
+*.qix
+*.sbn
+*.sbx
+
+# Arquivos de Sistema e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

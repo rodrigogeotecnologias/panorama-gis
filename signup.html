@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faça Parte do PANORAMA GIS | Cadastro & Teste Grátis</title>
+  <link rel="icon" type="image/png" href="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase Client & Config -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script charset="UTF-8" src="config.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            emerald: {
+              50: '#edf7fc',
+              100: '#d7eff9',
+              200: '#b4e1f4',
+              300: '#7eceec',
+              400: '#0094e8',
+              500: '#00A0FF', // Azul ArcGIS Oficial
+              600: '#008ee0',
+              700: '#005180',
+              800: '#004267',
+              900: '#003350',
+              950: '#001e30',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#182c44] text-slate-100 font-sans antialiased min-h-screen min-h-[100dvh] w-full overflow-y-auto md:overflow-hidden select-none">
+  <div class="w-full min-h-full flex flex-col md:flex-row">
+    
+    <!-- LADO ESQUERDO: CANVAS HERO GISCARTA (~72% da tela com Globo e Cantos Arredondados no Topo e na Base Direita) -->
+    <div class="hidden md:flex flex-1 h-full bg-[#243f64] relative flex-col justify-between p-12 lg:p-16 rounded-r-[36px] overflow-hidden select-none">
+      
+      <!-- Background SVG Globe GISCARTA -->
+      <div class="absolute inset-0 z-0 pointer-events-none flex items-center justify-end">
+        <img src="assets/images/giscarta_globe.svg" alt="Globo GIS" class="w-full h-full object-cover scale-95 opacity-80 translate-x-14 -translate-y-20" />
+      </div>
+
+      <!-- Top Branding -->
+      <div class="relative z-10 flex items-center gap-3">
+        <a href="index.html" class="flex items-center gap-3 group transition">
+          <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="Panorama GIS" class="h-11 w-auto object-contain transition group-hover:scale-105" />
+          <div class="flex flex-col">
+            <div class="text-2xl font-black tracking-tight text-white leading-none">
+              PANORAMA <span class="text-emerald-400">GIS</span>
+            </div>
+            <span class="text-[11px] text-[#8faecf] font-medium tracking-wide mt-1">Ampliando a Vis&#227;o do seu Neg&#243;cio</span>
+            
+          </div>
+        </a>
+      </div>
+
+      <!-- Bottom Headline -->
+      <div class="relative z-10 max-w-xl pb-4">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+          Intelig&#234;ncia territorial<br/>para seu neg&#243;cio
+        </h1>
+      </div>
+    </div>
+
+    <!-- LADO DIREITO: BARRA LATERAL DE CADASTRO (~28% da tela, 100vh / min-h-screen) -->
+    <div class="w-full md:w-[440px] lg:w-[480px] xl:w-[500px] min-h-screen md:h-full bg-[#182c44] flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-y-auto custom-scrollbar relative z-10">
+      
+      <!-- Top Action Bar -->
+      <div class="flex items-center justify-between pb-4">
+        <a href="index.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#8ca8c7] hover:text-emerald-400 transition cursor-pointer touch-target-min">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Voltar ao Início</span>
+        </a>
+        <a href="index.html" class="w-8 h-8 rounded-full bg-[#203a5a] hover:bg-[#2b4c74] text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer touch-target-min" title="Fechar e ir para a página inicial">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </a>
+      </div>
+
+      <div class="my-auto py-4">
+        <h2 class="text-xl sm:text-[22px] font-black text-white mb-2 tracking-tight">Faça Parte do PANORAMA GIS</h2>
+        <p class="text-xs text-[#9bb3d3] mb-6">Crie sua conta corporativa com 7 dias de teste grátis no Produto ASE</p>
+
+        <!-- Google Auth Button (GISCARTA style) -->
+        <button id="btn-google-signup" type="button" class="w-full py-3 px-4 bg-[#213c5e] hover:bg-[#284973] border border-[#345985] rounded-xl text-white font-bold text-xs flex items-center justify-center gap-3 transition cursor-pointer mb-5 shadow-sm">
+          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2 0 10.04 0 12s.46 3.8 1.27 5.42l4.01-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/></svg>
+          <span>Cadastrar com o Google</span>
+        </button>
+
+        <div class="flex items-center my-5">
+          <div class="flex-grow border-t border-[#2e5077]"></div>
+          <span class="px-3 text-[11px] text-[#7f9ebf] uppercase font-bold tracking-wider">ou</span>
+          <div class="flex-grow border-t border-[#2e5077]"></div>
+        </div>
+
+        <!-- Seletor dos 2 Planos no Cadastro -->
+        <div class="mb-5 space-y-1.5">
+          <label class="block text-[#a0c2e8] font-bold text-xs">Plano para Iniciar o Teste de 7 Dias:</label>
+          <div class="grid grid-cols-2 gap-2 text-left">
+            <button type="button" id="btn-plan-iniciante" onclick="window.selectSignupPlan('iniciante')" class="p-2.5 rounded-xl border transition text-left cursor-pointer border-[#2e5077] bg-[#1e3859]/80 hover:border-emerald-500/50">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-white text-xs">Iniciante</span>
+                <span class="text-[10px] text-emerald-400 font-mono font-bold">R$ 149</span>
+              </div>
+              <span class="text-[10px] text-[#8ca8c7] block mt-0.5">20 laudos &bull; 1 usuário</span>
+            </button>
+            <button type="button" id="btn-plan-profissional" onclick="window.selectSignupPlan('profissional')" class="p-2.5 rounded-xl border-2 transition text-left cursor-pointer border-emerald-500 bg-emerald-500/15 relative">
+              <div class="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full bg-emerald-500 text-slate-950 font-black text-[8px] uppercase">
+                ⭐ Campeão
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-white text-xs">Profissional</span>
+                <span class="text-[10px] text-emerald-300 font-mono font-bold">R$ 297</span>
+              </div>
+              <span class="text-[10px] text-slate-300 block mt-0.5">60 laudos &bull; Sua Logo</span>
+            </button>
+          </div>
+        </div>
+
+        <form id="signup-form" class="space-y-4 text-xs" onsubmit="return false;">
+          <div>
+            <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Nome da Consultoria / Empresa</label>
+            <input id="signup-company" type="text" required placeholder="Ex: BiomaGeo Consultoria Ambiental" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition" />
+          </div>
+
+          <div>
+            <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> E-mail Corporativo</label>
+            <input id="signup-email" type="email" required placeholder="contato@suaconsultoria.com.br" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Senha</label>
+              <div class="relative">
+                <input id="signup-password" type="password" required minlength="8" placeholder="M&#237;nimo 8 d&#237;gitos" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition pr-10" />
+                <button type="button" onclick="const p=document.getElementById('signup-password'); p.type = p.type==='password'?'text':'password';" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[#a0c2e8] font-bold mb-1.5"><span class="text-rose-400 mr-0.5">*</span> Confirmar Senha</label>
+              <div class="relative">
+                <input id="signup-password-confirm" type="password" required minlength="8" placeholder="Repita a senha" class="w-full bg-[#1e3859] border border-[#2e5077] rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition pr-10" />
+                <button type="button" onclick="const p=document.getElementById('signup-password-confirm'); p.type = p.type==='password'?'text':'password';" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selo 7 Dias Grátis Estilo GISCARTA -->
+          <div class="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-xs text-emerald-200">
+            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+            <span class="text-[11px] leading-snug">
+              <strong>7 dias gr&#225;tis inclusos no Produto ASE</strong> &bull; Sem cart&#227;o de cr&#233;dito.
+            </span>
+          </div>
+
+          <button id="btn-submit" type="submit" class="btn-panorama-page w-full py-3.5 text-sm text-white font-semibold rounded-[9px] cursor-pointer mt-1">
+            Cadastrar
+          </button>
+
+          <!-- Link estilo GISCARTA: I already have an account -->
+          <div class="text-center pt-2">
+            <a href="login.html" class="text-[#0EA5E9] hover:text-[#38bdf8] font-bold text-xs hover:underline cursor-pointer">
+              J&#225; tem uma conta? Conecte-se
+            </a>
+          </div>
+
+          <div id="signup-feedback" class="hidden text-xs rounded-xl px-3.5 py-2.5"></div>
+        </form>
+      </div>
+
+      <div class="pt-4 border-t border-[#244266] text-center text-[11px] text-[#6382a3]">
+        Ao se cadastrar, voc&#234; concorda com nossos <a href="#" class="underline hover:text-white">Termos de Servi&#231;o</a> e <a href="#" class="underline hover:text-white">Pol&#237;tica de Privacidade</a>.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) window.lucide.createIcons();
+
+    const sb = (window.supabase && window.CONFIG && CONFIG.supabaseUrl && !CONFIG.supabaseUrl.includes('SEU_PROJETO'))
+      ? window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey)
+      : null;
+
+    // Detecta se veio de um plano específico na URL (?plan=iniciante ou ?plan=profissional)
+    const urlParams = new URLSearchParams(window.location.search);
+    let chosenPlan = urlParams.get('plan') || 'profissional';
+    if (chosenPlan === 'essencial') chosenPlan = 'iniciante';
+    if (chosenPlan === 'corporativo') chosenPlan = 'profissional';
+
+    window.selectSignupPlan = function(p) {
+      chosenPlan = p === 'iniciante' ? 'iniciante' : 'profissional';
+      const bIni = document.getElementById('btn-plan-iniciante');
+      const bPro = document.getElementById('btn-plan-profissional');
+      if (chosenPlan === 'iniciante') {
+        if (bIni) bIni.className = 'p-2.5 rounded-xl border-2 transition text-left cursor-pointer border-emerald-500 bg-emerald-500/15';
+        if (bPro) bPro.className = 'p-2.5 rounded-xl border transition text-left cursor-pointer border-[#2e5077] bg-[#1e3859]/80 hover:border-emerald-500/50 relative';
+      } else {
+        if (bPro) bPro.className = 'p-2.5 rounded-xl border-2 transition text-left cursor-pointer border-emerald-500 bg-emerald-500/15 relative';
+        if (bIni) bIni.className = 'p-2.5 rounded-xl border transition text-left cursor-pointer border-[#2e5077] bg-[#1e3859]/80 hover:border-emerald-500/50';
+      }
+    };
+    window.selectSignupPlan(chosenPlan);
+
+    const feedback = document.getElementById('signup-feedback');
+    function showMsg(msg, isError) {
+      feedback.textContent = msg;
+      feedback.className = isError
+        ? 'text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-xl px-3.5 py-2.5 block'
+        : 'text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 block';
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const company_name = document.getElementById('signup-company').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-password-confirm').value;
+
+      if (password !== confirm) {
+        showMsg('As senhas digitadas não coincidem.', true);
+        return;
+      }
+
+      if (!sb) {
+        showMsg('Supabase não configurado na nuvem. Você pode testar livremente clicando no botão de demonstração no login.', true);
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.innerText = 'Criando conta...';
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            company_name: company_name,
+            plan_id: chosenPlan
+          },
+          emailRedirectTo: window.location.origin + '/index.html'
+        }
+      });
+
+      btn.disabled = false;
+      btn.innerText = 'Cadastrar';
+
+      if (error) {
+        showMsg(error.message, true);
+        return;
+      }
+
+      if (data && data.session) {
+        window.location.href = 'index.html';
+      } else {
+        showMsg('✓ Conta criada com sucesso! Enviamos um e-mail de confirmação. Confirme para acessar.', false);
+      }
+    });
+
+    // Suporte ao Laboratório de Teste de Logo
+    try {
+      const testLogo = localStorage.getItem('panorama_test_logo_override');
+      if (testLogo) {
+        document.querySelectorAll('img[src*="Panorama_GIS_Emblema"]').forEach(el => el.src = testLogo);
+      }
+    } catch (e) {}
+
+    document.getElementById('btn-google-signup').addEventListener('click', function() {
+      if (!sb) {
+        alert('Cadastro social com Google configurado na versão Cloud com Supabase.');
+        return;
+      }
+      sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/index.html' } });
+    });
+  </script>
+</body>
+</html>

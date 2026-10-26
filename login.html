@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar no PANORAMA GIS | Autenticação</title>
+  <link rel="icon" type="image/png" href="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase Client & Config -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script charset="UTF-8" src="config.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            arcgis: {
+              DEFAULT: '#00A0FF',
+              hover: '#008ee0',
+              light: '#0094e8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#f4f6f8] text-slate-800 font-sans antialiased min-h-screen min-h-[100dvh] w-full flex flex-col justify-between select-none">
+
+  <!-- Top Simple Return Header -->
+  <header class="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+    <a href="index.html" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-[#00A0FF] transition py-1 touch-target-min">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span class="truncate max-w-[200px] sm:max-w-none">Voltar ao Portal</span>
+    </a>
+    <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">Ambiente Seguro</span>
+  </header>
+
+  <!-- Main Container: ArcGIS Enterprise Centered Card (Pixel Perfect Replication & Fluid Mobile Bounds) -->
+  <main class="w-full max-w-[440px] mx-auto px-4 py-4 sm:py-8 flex-1 flex flex-col justify-center">
+    
+    <div class="bg-white border border-[#dcdcdc] rounded-md shadow-[0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden">
+      
+      <!-- Card Header: Title Left + Logo Right (Exact Screenshot 2) -->
+      <div class="px-7 py-4 border-b border-[#e5e5e5] flex items-center justify-between bg-white">
+        <span class="text-[15px] font-semibold text-[#2b2b2b] tracking-tight">Entrar no PANORAMA GIS</span>
+        <div class="flex items-center gap-2">
+          <img src="assets/branding/atuais/Panorama_GIS_Emblema_Transparente.png" alt="PANORAMA GIS" class="h-7 w-auto object-contain" />
+          <span class="text-xs font-black text-slate-700 tracking-tight">PANORAMA</span>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs (Login / Criar Acesso) -->
+      <div class="flex border-b border-[#e5e5e5] bg-slate-50/60 text-xs font-bold text-slate-500">
+        <button id="tab-btn-login" type="button" onclick="switchAuthTab('login')" class="flex-1 py-3 border-b-2 border-[#0EA5E9] text-[#0EA5E9] bg-white transition cursor-pointer">
+          Login
+        </button>
+        <button id="tab-btn-signup" type="button" onclick="switchAuthTab('signup')" class="flex-1 py-3 border-b-2 border-transparent hover:text-slate-700 transition cursor-pointer">
+          Criar Acesso
+        </button>
+      </div>
+
+      <!-- Card Body -->
+      <div class="p-7">
+        
+        <!-- Feedback Alerts -->
+        <div id="auth-alert" class="hidden mb-4 p-3 rounded text-xs font-medium"></div>
+
+        <!-- ==================== FORMULÁRIO 1: LOGIN (ARCGIS ENTERPRISE STYLE) ==================== -->
+        <form id="form-login" class="space-y-4" onsubmit="handleLoginSubmit(event)">
+          <div class="text-[13px] font-semibold text-slate-700 pb-1">
+            Login do PANORAMA GIS
+          </div>
+
+          <!-- Input Usuário -->
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="user" class="w-4 h-4"></i>
+              </span>
+              <input 
+                id="login-username" 
+                type="text" 
+                required 
+                placeholder="Nome de Usuário ou E-mail" 
+                value="rodrigo@suaconsultoria.com.br"
+                class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition placeholder-slate-400"
+              />
+            </div>
+          </div>
+
+          <!-- Input Senha -->
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="lock" class="w-4 h-4"></i>
+              </span>
+              <input 
+                id="login-password" 
+                type="password" 
+                required 
+                placeholder="Senha" 
+                value="••••••••••••"
+                class="w-full pl-9 pr-20 py-2 text-xs sm:text-sm text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition placeholder-slate-400"
+              />
+              <button 
+                type="button" 
+                id="btn-toggle-pwd" 
+                onclick="togglePasswordVisibility('login-password', 'pwd-toggle-text')" 
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-[#00A0FF] hover:text-[#005a91] transition cursor-pointer select-none"
+              >
+                <i data-lucide="eye" class="w-3.5 h-3.5 mr-1"></i>
+                <span id="pwd-toggle-text">Mostrar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Checkbox Mantenha-me registrado (Screenshot 2) -->
+          <div class="flex items-center pt-0.5">
+            <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+              <input id="remember-me" type="checkbox" checked class="w-3.5 h-3.5 rounded border-slate-300 text-[#00A0FF] focus:ring-[#00A0FF] cursor-pointer" />
+              <span>Mantenha-me registrado</span>
+            </label>
+          </div>
+
+          <!-- Botão Primário SaaS High-Tech Moderno -->
+          <button 
+            id="btn-login-submit" type="submit" class="btn-panorama-page w-full py-2.5 px-4 text-xs sm:text-sm text-white font-semibold rounded-[9px] cursor-pointer"
+          >
+            <span>Acessar</span>
+          </button>
+
+          <!-- Link Esqueceu a Senha (Screenshot 2) -->
+          <div class="text-center pt-2">
+            <button type="button" onclick="handleForgotPassword()" class="text-xs text-[#0EA5E9] hover:text-[#0284C7] hover:underline font-medium transition cursor-pointer">
+              Esqueceu a senha?
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="relative py-2">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+            <div class="relative flex justify-center text-[10px] uppercase font-bold text-slate-400"><span class="bg-white px-2">Acesso Rápido</span></div>
+          </div>
+
+          <!-- Botão Modo Demonstração Instantâneo -->
+          <button 
+            type="button" 
+            onclick="handleDemoAccess()" 
+            class="w-full py-2.5 px-3 rounded-[9px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+          >
+            <i data-lucide="play-circle" class="w-4 h-4 text-[#0EA5E9]"></i>
+            <span>Entrar em Modo Demonstração (Sem Senha)</span>
+          </button>
+        </form>
+
+        <!-- ==================== FORMULÁRIO 2: CRIAR ACESSO ==================== -->
+        <form id="form-signup" class="space-y-3.5 hidden" onsubmit="handleSignupSubmit(event)">
+          <div class="text-[13px] font-semibold text-slate-700 pb-1">
+            Criação de Acesso ao PANORAMA GIS
+          </div>
+
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+              </span>
+              <input id="signup-name" type="text" required placeholder="Nome Completo do Responsável" class="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+              </span>
+              <input id="signup-email" type="email" required placeholder="E-mail Corporativo" class="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="building" class="w-4 h-4"></i>
+              </span>
+              <input id="signup-company" type="text" required placeholder="Nome da Consultoria / Empresa" class="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="lock" class="w-4 h-4"></i>
+              </span>
+              <input id="signup-pwd" type="password" required placeholder="Definir Senha (mín. 6 caracteres)" minlength="6" class="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-white border border-[#cccccc] rounded focus:border-[#00A0FF] focus:ring-1 focus:ring-[#00A0FF] focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-500 leading-tight">
+            Ao criar sua conta, você terá acesso imediato à Área do Cliente e 7 dias de avaliação do Produto ASE.
+          </div>
+
+          <button id="btn-signup-submit" type="submit" class="btn-panorama-page w-full py-2.5 px-4 text-xs sm:text-sm text-white font-semibold rounded-[9px] cursor-pointer">
+            <span>Criar Acesso e Conectar</span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full py-4 text-center text-xs text-slate-400">
+    &copy; 2026 PANORAMA GIS &bull; Todos os direitos reservados.
+  </footer>
+
+  <!-- Logic & Redirection -->
+  <script>
+    if (window.lucide) window.lucide.createIcons();
+
+    // Alternância de Abas (Login / Criar Acesso)
+    function switchAuthTab(tab) {
+      const btnLogin = document.getElementById('tab-btn-login');
+      const btnSignup = document.getElementById('tab-btn-signup');
+      const formLogin = document.getElementById('form-login');
+      const formSignup = document.getElementById('form-signup');
+      const alertBox = document.getElementById('auth-alert');
+      alertBox.classList.add('hidden');
+
+      if (tab === 'login') {
+        btnLogin.className = "flex-1 py-3 border-b-2 border-[#0EA5E9] text-[#0EA5E9] bg-white transition cursor-pointer font-bold";
+        btnSignup.className = "flex-1 py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition cursor-pointer font-bold";
+        formLogin.classList.remove('hidden');
+        formSignup.classList.add('hidden');
+      } else {
+        btnSignup.className = "flex-1 py-3 border-b-2 border-[#0EA5E9] text-[#0EA5E9] bg-white transition cursor-pointer font-bold";
+        btnLogin.className = "flex-1 py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition cursor-pointer font-bold";
+        formSignup.classList.remove('hidden');
+        formLogin.classList.add('hidden');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Toggle Mostrar/Ocultar Senha (Screenshot 2)
+    function togglePasswordVisibility(inputId, labelId) {
+      const inp = document.getElementById(inputId);
+      const lbl = document.getElementById(labelId);
+      if (!inp) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        if (lbl) lbl.textContent = 'Ocultar';
+      } else {
+        inp.type = 'password';
+        if (lbl) lbl.textContent = 'Mostrar';
+      }
+    }
+
+    function showAlert(msg, isError) {
+      const el = document.getElementById('auth-alert');
+      el.textContent = msg;
+      el.className = isError
+        ? 'mb-4 p-3 rounded text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 block'
+        : 'mb-4 p-3 rounded text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 block';
+    }
+
+    // Salva a Sessão Corporativa e Retorna à Tela Inicial na Mesma Guia
+    function saveSessionAndRedirect(userPayload) {
+      const session = {
+        authenticated: true,
+        user: userPayload.user || 'Rodrigo Vasconcelos',
+        name: userPayload.name || 'Rodrigo Vasconcelos',
+        email: userPayload.email || 'rodrigo@suaconsultoria.com.br',
+        company: userPayload.company || 'Consultoria Ambiental & Fundiária',
+        plan: userPayload.plan || 'Plano Corporativo (ASE)',
+        role: userPayload.role || 'consultoria',
+        token: 'pgis_' + Math.random().toString(36).substring(2, 12),
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem('panorama_session', JSON.stringify(session));
+
+      // Feedback e redirecionamento de volta para a mesma guia na tela inicial com Área do Cliente aberta
+      showAlert('Autenticado com sucesso! Redirecionando para a Área do Cliente...', false);
+      setTimeout(() => {
+        window.location.href = 'index.html?page=cliente';
+      }, 350);
+    }
+
+    // Submissão do Login
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const userVal = document.getElementById('login-username').value.trim();
+      const pwdVal = document.getElementById('login-password').value;
+
+      if (!userVal || !pwdVal) {
+        showAlert('Informe seu usuário e senha.', true);
+        return;
+      }
+
+      const btn = document.getElementById('btn-login-submit');
+      btn.disabled = true;
+      btn.innerText = 'Acessando...';
+
+      // Verifica se Supabase está ativo na nuvem
+      const cfg = window.PANORAMA_CONFIG || window.CONFIG || {};
+      const sbUrl = cfg.SUPABASE_URL || cfg.supabaseUrl;
+      const sbKey = cfg.SUPABASE_ANON_KEY || cfg.supabaseAnonKey;
+      const isConfigured = !!(sbUrl && sbKey && !sbUrl.includes('SEU_PROJETO') && window.supabase);
+
+      if (isConfigured) {
+        try {
+          const sb = window.supabase.createClient(sbUrl, sbKey);
+          const { data, error } = await sb.auth.signInWithPassword({ email: userVal, password: pwdVal });
+          if (error) {
+            btn.disabled = false;
+            btn.innerText = 'Entrar';
+            const msg = error.message === 'Invalid login credentials' 
+              ? 'E-mail corporativo ou senha incorretos.' 
+              : error.message;
+            showAlert(msg, true);
+            return;
+          }
+          if (data?.session) {
+            window.location.href = 'index.html';
+            return;
+          }
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerText = 'Entrar';
+          showAlert('Erro ao autenticar: ' + err.message, true);
+          return;
+        }
+      }
+
+      // Fallback para demonstração local caso Supabase ainda não esteja com chaves preenchidas
+      saveSessionAndRedirect({
+        user: userVal,
+        name: userVal.includes('@') ? userVal.split('@')[0].replace('.', ' ') : userVal,
+        email: userVal.includes('@') ? userVal : 'consultor@panorama.gis.br',
+        company: 'Consultoria Ambiental & Fundiária',
+        plan: 'Plano Profissional (ASE)'
+      });
+    }
+
+    // Submissão do Criar Acesso
+    async function handleSignupSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const company = document.getElementById('signup-company').value.trim();
+      const pwd = document.getElementById('signup-pwd').value;
+
+      if (!name || !email || !company || !pwd) {
+        showAlert('Preencha todos os campos obrigatórios.', true);
+        return;
+      }
+
+      const btn = document.getElementById('btn-signup-submit');
+      btn.disabled = true;
+      btn.innerText = 'Criando Acesso...';
+
+      // Salva a nova conta
+      saveSessionAndRedirect({
+        user: name,
+        name: name,
+        email: email,
+        company: company,
+        plan: 'Plano Profissional ASE (Avaliação 7 Dias)'
+      });
+    }
+
+    // Acesso Rápido Demo
+    function handleDemoAccess() {
+      saveSessionAndRedirect({
+        user: 'Rodrigo Vasconcelos',
+        name: 'Rodrigo Vasconcelos',
+        email: 'rodrigo@suaconsultoria.com.br',
+        company: 'Consultoria Ambiental & Fundiária',
+        plan: 'Plano Corporativo (ASE)'
+      });
+    }
+
+    function handleForgotPassword() {
+      const email = document.getElementById('login-username').value.trim();
+      if (!email) {
+        showAlert('Digite seu e-mail no campo acima para receber as instruções de recuperação.', true);
+        return;
+      }
+      showAlert('Instruções de redefinição de acesso enviadas para ' + email + '.', false);
+    }
+  </script>
+</body>
+</html>
+
+

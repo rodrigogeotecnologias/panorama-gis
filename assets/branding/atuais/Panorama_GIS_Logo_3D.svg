@@ -1,0 +1,71 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <clipPath id="globe-clip-3d">
+      <circle cx="500" cy="500" r="485" />
+    </clipPath>
+    
+    <radialGradient id="sphere-light" cx="35%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32" />
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.10" />
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.0" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.45" />
+    </radialGradient>
+
+    <radialGradient id="specular-spot" cx="32%" cy="28%" r="35%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.50" />
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="green-3d" cx="35%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#14a355" />
+      <stop offset="60%" stop-color="#0B8343" />
+      <stop offset="100%" stop-color="#064f27" />
+    </radialGradient>
+
+    <radialGradient id="blue-3d" cx="35%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#24a3e8" />
+      <stop offset="60%" stop-color="#0087D1" />
+      <stop offset="100%" stop-color="#005382" />
+    </radialGradient>
+
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <g filter="url(#soft-shadow)">
+    <g clip-path="url(#globe-clip-3d)">
+      <!-- 1. Globe Background -->
+      <circle cx="500" cy="500" r="485" fill="url(#green-3d)" />
+
+      <!-- 2. Eye Interior Fill -->
+      <path d="M 25 500 C 280 362, 720 362, 975 500 C 720 638, 280 638, 25 500 Z" fill="url(#blue-3d)" />
+
+      <!-- 3. WHITE GRID LINES -->
+
+      <!-- 3.1 Central Vertical Meridian (Seamlessly enters into eyelid stroke) -->
+      <line x1="500" y1="-10" x2="500" y2="402" stroke="#FFFFFF" stroke-width="38" stroke-linecap="butt" />
+      <line x1="500" y1="598" x2="500" y2="1010" stroke="#FFFFFF" stroke-width="38" stroke-linecap="butt" />
+
+      <!-- 3.2 Northern Parallel Line -->
+      <path d="M -30 430 C 300 245, 700 245, 1030 430" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linecap="round" />
+
+      <!-- 3.3 Southern Parallel Line -->
+      <path d="M -30 570 C 300 755, 700 755, 1030 570" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linecap="round" />
+
+      <!-- 3.4 CÃ­rculo Maior IntermediÃ¡rio -->
+      <circle cx="500" cy="500" r="270" fill="none" stroke="#FFFFFF" stroke-width="38" />
+
+      <!-- 3.5 Eye Contours -->
+      <path d="M 25 500 C 280 362, 720 362, 975 500 C 720 638, 280 638, 25 500 Z" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linejoin="round" />
+
+      <!-- 3.6 CÃ­rculo Menor / Pupila -->
+      <circle cx="500" cy="500" r="98" fill="url(#blue-3d)" stroke="#FFFFFF" stroke-width="38" />
+
+      <!-- 3D Bulge & Shading Overlay -->
+      <circle cx="500" cy="500" r="485" fill="url(#sphere-light)" mix-blend-mode="multiply" />
+      <circle cx="500" cy="500" r="485" fill="url(#specular-spot)" />
+    </g>
+  </g>
+</svg>
