@@ -1751,7 +1751,7 @@ window.showLandingPage = function(pageId, anchorId) {
       <div class="h-6 w-px bg-slate-800 mx-1.5 hidden md:block"></div>
 
       <!-- Active Client & Project Selector -->
-      <div class="hidden xl:flex items-center gap-2 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-1.5">
+      <div id="project-selector-container" class="hidden xl:flex items-center gap-2 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-1.5">
         <i data-lucide="folder-git-2" class="w-4 h-4 text-[#00A0FF] shrink-0"></i>
         <select id="scenario-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer pr-1">
           <!-- Populated dynamically per logged-in consultancy -->
@@ -1764,11 +1764,6 @@ window.showLandingPage = function(pageId, anchorId) {
       <!-- Mobile Drawer Trigger for Right Sidebar (Diagnóstico / Relatório) -->
       <button id="btn-toggle-diagnosis-mobile" class="lg:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-emerald-400 hover:bg-slate-700 transition cursor-pointer touch-target-min flex items-center justify-center" title="Abrir Diagnóstico">
         <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-      </button>
-
-      <!-- Consultancy Area Button -->
-      <button id="btn-open-clients-hub" class="hidden sm:inline-flex px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all shadow-sm cursor-pointer" title="Área da Consultoria: Projetos, Clientes e Configuração da Marca">
-        Área da Consultoria
       </button>
 
       <!-- Client Portal Simulation Toggle Button -->

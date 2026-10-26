@@ -2986,6 +2986,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminItem = $('menu-item-provider-admin');
     if (adminItem) adminItem.classList.toggle('hidden', !isMaster);
+    const clientsHubItem = $('menu-item-clients-hub');
+    if (clientsHubItem) clientsHubItem.classList.toggle('hidden', isMaster);
     if (window.lucide) window.lucide.createIcons();
     updateMapLegend();
   }
@@ -3240,9 +3242,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyRoleUI() {
     const isMaster = profile?.role === 'master' || (profile?.role === 'admin' && !profile?.consultancy_id);
-    ['btn-open-clients-hub', 'btn-toggle-portal'].forEach((id) => $(id)?.classList.toggle('hidden', isMaster));
+    ['btn-open-clients-hub', 'btn-toggle-portal'].forEach((id) => {
+      const el = $(id);
+      if (el) el.style.display = isMaster ? 'none' : '';
+    });
     ['btn-open-report-2', 'btn-download-layers-package'].forEach((id) => $(id)?.classList.toggle('hidden', isMaster));
-    $('scenario-select')?.closest('div')?.classList.toggle('hidden', isMaster);
+    if ($('project-selector-container')) {
+      $('project-selector-container').style.display = isMaster ? 'none' : '';
+    }
 
     if (!isMaster && consultancy?.status === 'trial') {
       const d = Math.max(0, Math.ceil((new Date(consultancy.trial_ends_at) - Date.now()) / 86400000));
