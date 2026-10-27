@@ -133,9 +133,7 @@ LAYERS = [
         "geom_type": "MultiLineString",
         "shp_name": "hid_trecho_drenagem_l.shp",
         "select_fields": "nome,tipotrecho,regime,larguramed",
-        # No plano Free (500 MB), filtra os ~387 mil rios/córregos nomeados do Brasil (~110 MB);
-        # No plano Pro (SUPABASE_PRO=true), carrega todos os 1,6 milhão de segmentos.
-        "where": "" if os.environ.get("SUPABASE_PRO", "").lower() == "true" else "nome IS NOT NULL"
+        "where": "nome IS NOT NULL" if os.environ.get("FREE_TIER_LIMIT", "").lower() == "true" else ""
     },
     {
         "key": "embargos_ibama",

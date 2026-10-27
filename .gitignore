@@ -17,6 +17,7 @@ etl_probe_report.txt
 
 # Arquivos pesados temporários de ETL e Geometrias locais
 etl/test_download/
+etl/fallback/
 *.zip
 *.shp
 *.dbf
@@ -27,8 +28,6 @@ etl/test_download/
 *.sbn
 *.sbx
 
-# Cópias de contingência do INCRA (servidor bloqueia IPs do GitHub Actions)
-!etl/fallback/*.zip
 
 # Arquivos de Sistema e IDEs
 .DS_Store
