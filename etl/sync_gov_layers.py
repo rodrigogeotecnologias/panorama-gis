@@ -181,7 +181,7 @@ def test_db_connection(db_conn):
         log(f"Erro ao testar conexão com o banco: {e}")
         return False
 
-def download_file(url, out_path, max_retries=3):
+def download_file(url, out_path, max_retries=2):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "*/*",
@@ -193,7 +193,7 @@ def download_file(url, out_path, max_retries=3):
     for attempt in range(1, max_retries + 1):
         try:
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, context=ctx, timeout=180) as resp, open(out_path, "wb") as out:
+            with urllib.request.urlopen(req, context=ctx, timeout=45) as resp, open(out_path, "wb") as out:
                 shutil.copyfileobj(resp, out)
             if os.path.exists(out_path) and os.path.getsize(out_path) > 1000:
                 return True
@@ -202,7 +202,7 @@ def download_file(url, out_path, max_retries=3):
         except Exception as e:
             log(f"Tentativa {attempt}/{max_retries} de download falhou para {url}: {e}")
             if attempt < max_retries:
-                time.sleep(3)
+                time.sleep(2)
     return False
 
 def sync_layer(layer, db_connection_str, work_dir):
@@ -252,12 +252,13 @@ def sync_layer(layer, db_connection_str, work_dir):
 
     # 3. Ingestão via ogr2ogr no PostGIS (em staging)
     # ogr2ogr garante reprojeção automática para SIRGAS 2000 (EPSG:4674),
-    # criação de geometria válida, tipagem correta e conversão de datas inválidas (ex: 0000/00/00 para NULL)
+    # transcodificação de caracteres Latin-1 para UTF-8 (--config SHAPE_ENCODING LATIN1),
+    # conversão de datas inválidas (0000/00/00 para NULL) e tolerância a falhas (-skipfailures)
     ogr_cmd = (
         f'ogr2ogr -f "PostgreSQL" "{db_connection_str}" "{vector_file}" '
         f'-nln "{staging_table}" -overwrite -t_srs EPSG:4674 -lco GEOMETRY_NAME=geom '
         f'-lco FID=id -lco SPATIAL_INDEX=GIST -nlt PROMOTE_TO_MULTI '
-        f'--config OGR_EMPTY_DATE_AS_NULL YES -oo EMPTY_DATE_AS_NULL=YES'
+        f'--config SHAPE_ENCODING LATIN1 --config OGR_EMPTY_DATE_AS_NULL YES -skipfailures'
     )
     
     log(f"Ingerindo dados na tabela temporária {staging_table}...")
