@@ -23,28 +23,30 @@ create table if not exists public.gov_layers_metadata (
 
 -- Registros iniciais de controle
 insert into public.gov_layers_metadata (layer_key, layer_label, source_agency) values
-  ('uc',              'Unidades de Conservação',      'MMA / CNUC'),
-  ('canie',           'Cavidades Naturais (CANIE)',   'ICMBio / CECAV'),
-  ('iphan',           'Sítios Arqueológicos',         'IPHAN / SICG'),
-  ('funai',           'Terras Indígenas',             'FUNAI'),
-  ('embargos',        'Áreas Embargadas (ICMBio)',    'ICMBio'),
-  ('sigef',           'Imóveis Certificados (SIGEF)', 'INCRA'),
-  ('rodovias',        'Malha Rodoviária Oficial',     'DNIT / SNV'),
-  ('hidrografia',     'Hidrografia e Drenagem',       'IBGE / BC250'),
-  ('quilombolas',     'Territórios Quilombolas',          'INCRA / Acervo Fundiário (DQ)'),
-  ('assentamentos',   'Assentamentos da Reforma Agrária', 'INCRA / Acervo Fundiário'),
-  ('embargos_ibama',  'Áreas Embargadas (IBAMA)',     'IBAMA')
+  ('uc',                 'Unidades de Conservação',                     'MMA / CNUC'),
+  ('canie',              'Cavidades Naturais (CANIE)',                  'ICMBio / CECAV'),
+  ('iphan',              'Sítios Arqueológicos (Pontos)',               'IPHAN / SICG'),
+  ('iphan_pol',          'Sítios Arqueológicos (Poligonais)',           'IPHAN / SICG'),
+  ('funai',              'Terras Indígenas',                            'FUNAI'),
+  ('embargos',           'Áreas Embargadas (ICMBio)',                   'ICMBio'),
+  ('sigef',              'Imóveis Certificados (SIGEF)',                'INCRA'),
+  ('rodovias',           'Malha Rodoviária Oficial (Federal)',          'DNIT / SNV'),
+  ('rodovias_estaduais', 'Base Rodoviária Estadual Unificada (SRE)',    'DNIT / SRE / INDE'),
+  ('hidrografia',        'Hidrografia e Drenagem',                      'IBGE / BC250'),
+  ('quilombolas',        'Territórios Quilombolas',                     'INCRA / Acervo Fundiário (DQ)'),
+  ('assentamentos',      'Assentamentos da Reforma Agrária',            'INCRA / Acervo Fundiário'),
+  ('embargos_ibama',     'Áreas Embargadas (IBAMA)',                    'IBAMA / PAMGIA')
 on conflict (layer_key) do nothing;
 
 -- ----------------------------------------------------------------------------
--- 3. Tabelas das Camadas Oficiais Federais
+-- 3. Tabelas das Camadas Oficiais Federais (alinhadas aos atributos OGR/SHP)
 -- ----------------------------------------------------------------------------
 
 -- 3.1 Unidades de Conservação (CNUC / MMA)
 create table if not exists public.gov_uc (
   id          bigserial primary key,
   cd_cnuc     text,
-  nome_uc     text not null,
+  nome_uc     text,
   categoria   text,
   grupo       text,
   esfera      text,
@@ -52,10 +54,9 @@ create table if not exists public.gov_uc (
   municipio   text,
   cria_ato    text,
   ha_total    numeric,
-  geom        geometry(MultiPolygon, 4674) not null
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_uc_geom on public.gov_uc using gist (geom);
-create index if not exists idx_gov_uc_nome on public.gov_uc (nome_uc);
 
 -- 3.2 Cavidades Naturais Subterrâneas (CANIE / ICMBio)
 create table if not exists public.gov_canie (
@@ -65,36 +66,45 @@ create table if not exists public.gov_canie (
   municipio   text,
   estado      text,
   nvl_valida  text,
-  geom        geometry(Point, 4674) not null
+  geom        geometry(Geometry, 4674)
 );
 create index if not exists idx_gov_canie_geom on public.gov_canie using gist (geom);
 
--- 3.3 Sítios Arqueológicos e Bens Culturais (IPHAN / SICG)
+-- 3.3 Sítios Arqueológicos — Pontos e Polígonos (IPHAN / SICG)
 create table if not exists public.gov_iphan (
-  id                  bigserial primary key,
-  co_iphan            text,
-  identificacao_bem   text not null,
-  ds_classificacao    text,
-  ds_tipo_bem         text,
-  sintese_bem         text,
-  geom_point          geometry(Point, 4674),
-  geom_poly           geometry(MultiPolygon, 4674)
+  id          bigserial primary key,
+  co_iphan    text,
+  identifica  text,
+  ds_classif  text,
+  ds_tipo_be  text,
+  sintese_be  text,
+  geom        geometry(Geometry, 4674)
 );
-create index if not exists idx_gov_iphan_point on public.gov_iphan using gist (geom_point) where geom_point is not null;
-create index if not exists idx_gov_iphan_poly on public.gov_iphan using gist (geom_poly) where geom_poly is not null;
+create index if not exists idx_gov_iphan_geom on public.gov_iphan using gist (geom);
+
+create table if not exists public.gov_iphan_poly (
+  id          bigserial primary key,
+  co_iphan    text,
+  identifica  text,
+  ds_classif  text,
+  ds_tipo_be  text,
+  sintese_be  text,
+  geom        geometry(MultiPolygon, 4674)
+);
+create index if not exists idx_gov_iphan_poly_geom on public.gov_iphan_poly using gist (geom);
 
 -- 3.4 Terras Indígenas (FUNAI)
 create table if not exists public.gov_funai (
-  id                       bigserial primary key,
-  terrai_codigo            text,
-  terrai_nome              text not null,
-  etnia_nome               text,
-  municipio_nome           text,
-  uf_sigla                 text,
-  fase_ti                  text,
-  modalidade_ti            text,
-  superficie_perimetro_ha  numeric,
-  geom                     geometry(MultiPolygon, 4674) not null
+  id          bigserial primary key,
+  terrai_cod  text,
+  terrai_nom  text,
+  etnia_nome  text,
+  municipio_  text,
+  uf_sigla    text,
+  fase_ti     text,
+  modalidade  text,
+  superficie  numeric,
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_funai_geom on public.gov_funai using gist (geom);
 
@@ -111,28 +121,22 @@ create table if not exists public.gov_embargos (
   uf          text,
   area        numeric,
   ano         text,
-  geom        geometry(MultiPolygon, 4674) not null
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_embargos_geom on public.gov_embargos using gist (geom);
 
 -- 3.6 Imóveis Certificados (INCRA / SIGEF)
 create table if not exists public.gov_sigef (
-  id                 bigserial primary key,
-  parcela_codigo     text,
-  parcela_co         text,
-  nome_area          text,
-  codigo_imovel      text,
-  codigo_imo         text,
-  area_hectares      numeric,
-  status             text,
-  natureza           text,
-  situacao_informada text,
-  situacao_i         text,
-  uf                 text,
-  geom               geometry(MultiPolygon, 4674) not null
+  id          bigserial primary key,
+  parcela_co  text,
+  nome_area   text,
+  codigo_imo  text,
+  status      text,
+  situacao_i  text,
+  uf_id       text,
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_sigef_geom on public.gov_sigef using gist (geom);
-create index if not exists idx_gov_sigef_uf on public.gov_sigef (uf);
 
 -- 3.7 Malha Rodoviária Oficial (DNIT / SNV)
 create table if not exists public.gov_rodovias (
@@ -142,7 +146,7 @@ create table if not exists public.gov_rodovias (
   nm_tipo_tr  text,
   ds_superfi  text,
   ds_jurisdi  text,
-  geom        geometry(MultiLineString, 4674) not null
+  geom        geometry(MultiLineString, 4674)
 );
 create index if not exists idx_gov_rodovias_geom on public.gov_rodovias using gist (geom);
 
@@ -155,21 +159,20 @@ create table if not exists public.gov_rodovias_estaduais (
   superficie  text,
   jurisdicao  text,
   cod_cide    text,
-  geom        geometry(MultiLineString, 4674) not null
+  geom        geometry(MultiLineString, 4674)
 );
 create index if not exists idx_gov_rodovias_estaduais_geom on public.gov_rodovias_estaduais using gist (geom);
-create index if not exists idx_gov_rodovias_estaduais_uf on public.gov_rodovias_estaduais (uf);
 
 -- 3.8 Hidrografia e Drenagem (IBGE / BC250)
 create table if not exists public.gov_hidrografia (
-  id                  bigserial primary key,
-  nome                text,
-  tipotrechodrenagem  text,
-  regime              text,
-  larguramedia        numeric,
-  geom                geometry(Geometry, 4674) not null
+  id          bigserial primary key,
+  nome        text,
+  tipotrecho  text,
+  regime      text,
+  larguramed  numeric,
+  geom        geometry(Geometry, 4674)
 );
-create index if not exists idx_gov_hidro_geom on public.gov_hidrografia using gist (geom);
+create index if not exists idx_gov_hidrografia_geom on public.gov_hidrografia using gist (geom);
 
 -- 3.9 Territórios Quilombolas (INCRA / Acervo Fundiário - DQ)
 create table if not exists public.gov_quilombolas (
@@ -181,19 +184,12 @@ create table if not exists public.gov_quilombolas (
   nr_process  text,
   fase        text,
   st_titulad  text,
-  dt_titulac  text,
   nr_familia  text,
   nr_area_ha  numeric,
   area_calc_  numeric,
   esfera      text,
   cd_sr       text,
-  -- Compatibilidade com bases legadas / IBGE
-  nm_tq       text,
-  cd_tq       text,
-  status      text,
-  sg_uf       text,
-  cd_recorte  text,
-  geom        geometry(MultiPolygon, 4674) not null
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_quilombolas_geom on public.gov_quilombolas using gist (geom);
 
@@ -204,33 +200,28 @@ create table if not exists public.gov_assentamentos (
   nome_proje  text,
   municipio   text,
   uf          text,
-  area_hecta  numeric,
+  area_hecta  text,
+  area_calc_  numeric,
   capacidade  integer,
   num_famili  integer,
   fase        text,
   sr          text,
-  nm_localid  text,
-  nm_municip  text,
-  sigla_uf    text,
-  nm_categor  text,
-  tipo        text,
-  geom        geometry(Geometry, 4674) not null
+  geom        geometry(Geometry, 4674)
 );
 create index if not exists idx_gov_assentamentos_geom on public.gov_assentamentos using gist (geom);
-create index if not exists idx_gov_assentamentos_sipra on public.gov_assentamentos (cd_sipra);
 
 -- 3.11 Áreas Embargadas do IBAMA (IBAMA / PAMGIA)
 create table if not exists public.gov_embargos_ibama (
-  id                  bigserial primary key,
-  num_tad             text,
-  serie_tad           text,
-  num_auto_infracao   text,
-  nome_embargado      text,
-  municipio           text,
-  uf                  text,
-  des_tad             text,
-  qtd_area_embargada  numeric,
-  geom                geometry(MultiPolygon, 4674) not null
+  id          bigserial primary key,
+  num_tad     text,
+  serie_tad   text,
+  num_auto_i  text,
+  nome_embar  text,
+  municipio   text,
+  uf          text,
+  des_tad     text,
+  qtd_area_e  numeric,
+  geom        geometry(MultiPolygon, 4674)
 );
 create index if not exists idx_gov_embargos_ibama_geom on public.gov_embargos_ibama using gist (geom);
 
@@ -280,7 +271,7 @@ begin
   end if;
 
   -- Torna a geometria topologicamente válida
-  v_proj_valid := ST_MakeValid(ST_RemoveRepeatedPoints(v_proj_geom));
+  v_proj_valid := ST_MakeValid(v_proj_geom);
   
   v_is_poly  := ST_GeometryType(v_proj_valid) in ('ST_Polygon', 'ST_MultiPolygon');
   v_is_line  := ST_GeometryType(v_proj_valid) in ('ST_LineString', 'ST_MultiLineString');
@@ -332,7 +323,7 @@ begin
         v_isects := v_isects || jsonb_build_object(
           'featureId', r_rec.id,
           'name', r_rec.nome_uc,
-          'coordStr', 'Interseção UC: ' || r_rec.nome_uc
+          'coordStr', 'Interseção UC: ' || coalesce(r_rec.nome_uc, 'UC')
         );
       end if;
     else
@@ -377,7 +368,7 @@ begin
       c.id, c.num_canie, c.nome, c.municipio, c.estado, c.nvl_valida,
       ST_Intersects(c.geom, v_proj_valid) as touches,
       round(ST_Distance(c.geom::geography, v_proj_valid::geography)::numeric, 1) as dist_m,
-      ST_Y(c.geom) as lat, ST_X(c.geom) as lon
+      ST_Y(ST_Centroid(c.geom)) as lat, ST_X(ST_Centroid(c.geom)) as lon
     from public.gov_canie c
     where (
       (v_buffer_m <= 0 and ST_Intersects(c.geom, v_proj_valid))
@@ -399,7 +390,7 @@ begin
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', coalesce(r_rec.nome, 'Cavidade CANIE ' || r_rec.num_canie),
+        'name', coalesce(r_rec.nome, 'Cavidade CANIE ' || coalesce(r_rec.num_canie, '')),
         'coordStr', 'Cavidade: Lat ' || round(r_rec.lat::numeric, 5)::text || '°, Lon ' || round(r_rec.lon::numeric, 5)::text || '°'
       );
     else
@@ -432,67 +423,58 @@ begin
   v_out := v_out || v_card;
 
   -- =========================================================================
-  -- CAMADA 3: SÍTIOS ARQUEOLÓGICOS / IPHAN (gov_iphan)
+  -- CAMADA 3: SÍTIOS ARQUEOLÓGICOS / IPHAN (gov_iphan + gov_iphan_poly)
   -- =========================================================================
   v_overlaps := '[]'::jsonb;
   v_nears := '[]'::jsonb;
   v_isects := '[]'::jsonb;
+  v_overlap_area := 0;
 
   for r_rec in
     select 
-      i.id, i.co_iphan, i.identificacao_bem, i.ds_classificacao, i.ds_tipo_bem, i.sintese_bem,
-      case 
-        when i.geom_poly is not null then ST_Intersects(i.geom_poly, v_proj_valid)
-        else ST_Intersects(i.geom_point, v_proj_valid)
-      end as touches,
-      case 
-        when i.geom_poly is not null then round(ST_Distance(i.geom_poly::geography, v_proj_valid::geography)::numeric, 1)
-        else round(ST_Distance(i.geom_point::geography, v_proj_valid::geography)::numeric, 1)
-      end as dist_m,
-      case 
-        when i.geom_point is not null then ST_Y(i.geom_point)
-        else ST_Y(ST_Centroid(i.geom_poly))
-      end as lat,
-      case 
-        when i.geom_point is not null then ST_X(i.geom_point)
-        else ST_X(ST_Centroid(i.geom_poly))
-      end as lon
-    from public.gov_iphan i
+      i.id, i.co_iphan, i.identifica, i.ds_classif, i.ds_tipo_be, i.sintese_be,
+      ST_Intersects(i.geom, v_proj_valid) as touches,
+      case when ST_Intersects(i.geom, v_proj_valid) and v_is_poly and ST_GeometryType(i.geom) in ('ST_Polygon', 'ST_MultiPolygon') then
+        ST_Area(ST_Intersection(i.geom, v_proj_valid)::geography) / 10000.0
+      else 0 end as overlap_ha,
+      round(ST_Distance(i.geom::geography, v_proj_valid::geography)::numeric, 1) as dist_m,
+      ST_Y(ST_Centroid(i.geom)) as lat,
+      ST_X(ST_Centroid(i.geom)) as lon
+    from (
+      select id, co_iphan, identifica, ds_classif, ds_tipo_be, sintese_be, geom from public.gov_iphan
+      union all
+      select id, co_iphan, identifica, ds_classif, ds_tipo_be, sintese_be, geom from public.gov_iphan_poly
+    ) i
     where (
-      (v_buffer_m <= 0 and (
-        (i.geom_poly is not null and ST_Intersects(i.geom_poly, v_proj_valid)) or
-        (i.geom_point is not null and ST_Intersects(i.geom_point, v_proj_valid))
-      ))
+      (v_buffer_m <= 0 and ST_Intersects(i.geom, v_proj_valid))
       or
-      (v_buffer_m > 0 and (
-        (i.geom_poly is not null and ST_DWithin(i.geom_poly::geography, v_proj_valid::geography, v_buffer_m)) or
-        (i.geom_point is not null and ST_DWithin(i.geom_point::geography, v_proj_valid::geography, v_buffer_m))
-      ))
+      (v_buffer_m > 0 and ST_DWithin(i.geom::geography, v_proj_valid::geography, v_buffer_m))
     )
     order by touches desc, dist_m asc
     limit 200
   loop
     if r_rec.touches then
+      v_overlap_area := v_overlap_area + r_rec.overlap_ha;
       v_overlaps := v_overlaps || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'identificacao_bem', r_rec.identificacao_bem, 'co_iphan', r_rec.co_iphan,
-          'ds_classificacao', r_rec.ds_classificacao, 'ds_tipo_bem', r_rec.ds_tipo_bem, 'sintese_bem', r_rec.sintese_bem
+          'identificacao_bem', r_rec.identifica, 'co_iphan', r_rec.co_iphan,
+          'ds_classificacao', r_rec.ds_classif, 'ds_tipo_bem', r_rec.ds_tipo_be, 'sintese_bem', r_rec.sintese_be
         ),
         'pointCoord', 'Lat ' || round(r_rec.lat::numeric, 5)::text || '°, Lon ' || round(r_rec.lon::numeric, 5)::text || '°',
         'distM', 0
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', r_rec.identificacao_bem,
+        'name', coalesce(r_rec.identifica, 'Sítio IPHAN'),
         'coordStr', 'Sítio: Lat ' || round(r_rec.lat::numeric, 5)::text || '°, Lon ' || round(r_rec.lon::numeric, 5)::text || '°'
       );
     else
       v_nears := v_nears || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'identificacao_bem', r_rec.identificacao_bem, 'co_iphan', r_rec.co_iphan,
-          'ds_classificacao', r_rec.ds_classificacao, 'ds_tipo_bem', r_rec.ds_tipo_bem, 'sintese_bem', r_rec.sintese_bem
+          'identificacao_bem', r_rec.identifica, 'co_iphan', r_rec.co_iphan,
+          'ds_classificacao', r_rec.ds_classif, 'ds_tipo_bem', r_rec.ds_tipo_be, 'sintese_bem', r_rec.sintese_be
         ),
         'pointCoord', 'Lat ' || round(r_rec.lat::numeric, 5)::text || '°, Lon ' || round(r_rec.lon::numeric, 5)::text || '°',
         'distM', r_rec.dist_m
@@ -505,8 +487,8 @@ begin
     'overlap', v_overlaps,
     'near', v_nears,
     'intersections', v_isects,
-    'overlapAreaHa', 0,
-    'overlapAreaPct', 0,
+    'overlapAreaHa', round(v_overlap_area, 2),
+    'overlapAreaPct', case when v_proj_area_ha > 0 then round((v_overlap_area / v_proj_area_ha) * 100.0, 1) else 0 end,
     'internalLengthM', 0,
     'overlapTotal', jsonb_array_length(v_overlaps),
     'nearTotal', jsonb_array_length(v_nears),
@@ -526,7 +508,14 @@ begin
 
   for r_rec in
     select 
-      f.id, f.terrai_nome, f.etnia_nome, f.municipio_nome, f.uf_sigla, f.fase_ti, f.modalidade_ti, f.superficie_perimetro_ha,
+      f.id,
+      f.terrai_nom as terrai_nome,
+      f.etnia_nome,
+      f.municipio_ as municipio_nome,
+      f.uf_sigla,
+      f.fase_ti,
+      f.modalidade as modalidade_ti,
+      f.superficie as superficie_perimetro_ha,
       ST_Intersects(f.geom, v_proj_valid) as touches,
       case when ST_Intersects(f.geom, v_proj_valid) and v_is_poly then
         ST_Area(ST_Intersection(f.geom, v_proj_valid)::geography) / 10000.0
@@ -555,8 +544,8 @@ begin
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', 'TI ' || r_rec.terrai_nome,
-        'coordStr', 'Confrontação TI: ' || r_rec.terrai_nome
+        'name', 'TI ' || coalesce(r_rec.terrai_nome, ''),
+        'coordStr', 'Confrontação TI: ' || coalesce(r_rec.terrai_nome, '')
       );
     else
       v_nears := v_nears || jsonb_build_object(
@@ -589,7 +578,7 @@ begin
   v_out := v_out || v_card;
 
   -- =========================================================================
-  -- CAMADA 5: ÁREAS EMBARGADAS (gov_embargos)
+  -- CAMADA 5: ÁREAS EMBARGADAS (gov_embargos - ICMBio)
   -- =========================================================================
   v_overlaps := '[]'::jsonb;
   v_nears := '[]'::jsonb;
@@ -627,8 +616,8 @@ begin
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', 'Embargo ' || coalesce(r_rec.numero_emb, r_rec.numero_ai),
-        'coordStr', 'Embargo Ambiental: ' || coalesce(r_rec.numero_emb, r_rec.numero_ai)
+        'name', 'Embargo ' || coalesce(r_rec.numero_emb, r_rec.numero_ai, ''),
+        'coordStr', 'Embargo Ambiental: ' || coalesce(r_rec.numero_emb, r_rec.numero_ai, '')
       );
     else
       v_nears := v_nears || jsonb_build_object(
@@ -671,13 +660,11 @@ begin
   for r_rec in
     select 
       s.id,
-      coalesce(s.parcela_codigo, s.parcela_co) as parcela_codigo,
+      s.parcela_co as parcela_codigo,
       s.nome_area,
-      coalesce(s.codigo_imovel, s.codigo_imo) as codigo_imovel,
-      s.area_hectares,
+      s.codigo_imo as codigo_imovel,
       s.status,
-      s.natureza,
-      coalesce(s.situacao_informada, s.situacao_i) as situacao_informada,
+      s.situacao_i as situacao_informada,
       ST_Intersects(s.geom, v_proj_valid) as touches,
       case when ST_Intersects(s.geom, v_proj_valid) and v_is_poly then
         ST_Area(ST_Intersection(s.geom, v_proj_valid)::geography) / 10000.0
@@ -697,24 +684,28 @@ begin
       v_overlaps := v_overlaps || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'parcela_codigo', r_rec.parcela_codigo, 'nome_area', r_rec.nome_area,
-          'codigo_imovel', r_rec.codigo_imovel, 'area_hectares', r_rec.area_hectares,
-          'status', r_rec.status, 'natureza', r_rec.natureza, 'situacao_informada', r_rec.situacao_informada
+          'parcela_codigo', r_rec.parcela_codigo, 'parcela_co', r_rec.parcela_codigo,
+          'nome_area', r_rec.nome_area,
+          'codigo_imovel', r_rec.codigo_imovel, 'codigo_imo', r_rec.codigo_imovel,
+          'status', r_rec.status,
+          'situacao_informada', r_rec.situacao_informada, 'situacao_i', r_rec.situacao_informada
         ),
         'distM', 0
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', coalesce(r_rec.nome_area, 'SIGEF ' || r_rec.parcela_codigo),
-        'coordStr', 'Confrontação SIGEF: ' || coalesce(r_rec.nome_area, r_rec.parcela_codigo)
+        'name', coalesce(r_rec.nome_area, 'SIGEF ' || coalesce(r_rec.parcela_codigo, '')),
+        'coordStr', 'Confrontação SIGEF: ' || coalesce(r_rec.nome_area, r_rec.parcela_codigo, '')
       );
     else
       v_nears := v_nears || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'parcela_codigo', r_rec.parcela_codigo, 'nome_area', r_rec.nome_area,
-          'codigo_imovel', r_rec.codigo_imovel, 'area_hectares', r_rec.area_hectares,
-          'status', r_rec.status, 'natureza', r_rec.natureza, 'situacao_informada', r_rec.situacao_informada
+          'parcela_codigo', r_rec.parcela_codigo, 'parcela_co', r_rec.parcela_codigo,
+          'nome_area', r_rec.nome_area,
+          'codigo_imovel', r_rec.codigo_imovel, 'codigo_imo', r_rec.codigo_imovel,
+          'status', r_rec.status,
+          'situacao_informada', r_rec.situacao_informada, 'situacao_i', r_rec.situacao_informada
         ),
         'distM', r_rec.dist_m
       );
@@ -738,7 +729,7 @@ begin
   v_out := v_out || v_card;
 
   -- =========================================================================
-  -- CAMADA 7: MALHA RODOVIÁRIA / SNV (gov_rodovias)
+  -- CAMADA 7: MALHA RODOVIÁRIA / SNV + SRE (gov_rodovias + gov_rodovias_estaduais)
   -- =========================================================================
   v_overlaps := '[]'::jsonb;
   v_nears := '[]'::jsonb;
@@ -747,14 +738,26 @@ begin
 
   for r_rec in
     select 
-      rod.id, rod.vl_br, rod.sg_uf, rod.nm_tipo_tr, rod.ds_superfi, rod.ds_jurisdi,
+      rod.id, rod.vl_br, rod.via, rod.sg_uf, rod.uf, rod.nm_tipo_tr, rod.tipo_trech,
+      rod.ds_superfi, rod.superficie, rod.ds_jurisdi, rod.jurisdicao, rod.cod_cide,
       ST_Intersects(rod.geom, v_proj_valid) as touches,
       case when ST_Intersects(rod.geom, v_proj_valid) then
         ST_Length(ST_Intersection(rod.geom, v_proj_valid)::geography)
       else 0 end as len_m,
-      round(ST_Distance(rod.geom::geography, v_proj_valid::geography)::numeric, 1) as dist_m,
-      ST_AsGeoJSON(ST_Centroid(ST_Intersection(rod.geom, v_proj_valid))) as isect_pt
-    from public.gov_rodovias rod
+      round(ST_Distance(rod.geom::geography, v_proj_valid::geography)::numeric, 1) as dist_m
+    from (
+      select id, vl_br::text as vl_br, null::text as via, sg_uf::text as sg_uf, sg_uf::text as uf,
+             nm_tipo_tr::text as nm_tipo_tr, null::text as tipo_trech, ds_superfi::text as ds_superfi,
+             null::text as superficie, ds_jurisdi::text as ds_jurisdi, null::text as jurisdicao,
+             null::text as cod_cide, geom
+      from public.gov_rodovias
+      union all
+      select id, null::text as vl_br, via::text as via, uf::text as sg_uf, uf::text as uf,
+             null::text as nm_tipo_tr, tipo_trech::text as tipo_trech, null::text as ds_superfi,
+             superficie::text as superficie, null::text as ds_jurisdi, jurisdicao::text as jurisdicao,
+             cod_cide::text as cod_cide, ST_Force2D(geom) as geom
+      from public.gov_rodovias_estaduais
+    ) rod
     where (
       (v_buffer_m <= 0 and ST_Intersects(rod.geom, v_proj_valid))
       or
@@ -768,22 +771,26 @@ begin
       v_overlaps := v_overlaps || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'vl_br', r_rec.vl_br, 'sg_uf', r_rec.sg_uf, 'nm_tipo_tr', r_rec.nm_tipo_tr,
-          'ds_superfi', r_rec.ds_superfi, 'ds_jurisdi', r_rec.ds_jurisdi
+          'vl_br', r_rec.vl_br, 'via', r_rec.via, 'sg_uf', r_rec.sg_uf, 'uf', r_rec.uf,
+          'nm_tipo_tr', r_rec.nm_tipo_tr, 'tipo_trech', r_rec.tipo_trech,
+          'ds_superfi', r_rec.ds_superfi, 'superficie', r_rec.superficie,
+          'ds_jurisdi', r_rec.ds_jurisdi, 'jurisdicao', r_rec.jurisdicao, 'cod_cide', r_rec.cod_cide
         ),
         'distM', 0
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', 'Rodovia BR-' || coalesce(r_rec.vl_br, 'S/N'),
-        'coordStr', 'Cruzamento Rodoviário: BR-' || coalesce(r_rec.vl_br, 'S/N')
+        'name', case when r_rec.vl_br is not null then 'Rodovia BR-' || r_rec.vl_br else 'Rodovia Estadual ' || coalesce(r_rec.via, 'S/N') end,
+        'coordStr', 'Cruzamento Rodoviário: ' || case when r_rec.vl_br is not null then 'BR-' || r_rec.vl_br else coalesce(r_rec.via, 'Estadual') end
       );
     else
       v_nears := v_nears || jsonb_build_object(
         'id', r_rec.id,
         'props', jsonb_build_object(
-          'vl_br', r_rec.vl_br, 'sg_uf', r_rec.sg_uf, 'nm_tipo_tr', r_rec.nm_tipo_tr,
-          'ds_superfi', r_rec.ds_superfi, 'ds_jurisdi', r_rec.ds_jurisdi
+          'vl_br', r_rec.vl_br, 'via', r_rec.via, 'sg_uf', r_rec.sg_uf, 'uf', r_rec.uf,
+          'nm_tipo_tr', r_rec.nm_tipo_tr, 'tipo_trech', r_rec.tipo_trech,
+          'ds_superfi', r_rec.ds_superfi, 'superficie', r_rec.superficie,
+          'ds_jurisdi', r_rec.ds_jurisdi, 'jurisdicao', r_rec.jurisdicao, 'cod_cide', r_rec.cod_cide
         ),
         'distM', r_rec.dist_m
       );
@@ -816,7 +823,7 @@ begin
 
   for r_rec in
     select 
-      h.id, h.nome, h.tipotrechodrenagem, h.regime, h.larguramedia,
+      h.id, h.nome, h.tipotrecho as tipotrechodrenagem, h.regime, h.larguramed as larguramedia,
       ST_Intersects(h.geom, v_proj_valid) as touches,
       case when ST_Intersects(h.geom, v_proj_valid) and ST_GeometryType(h.geom) in ('ST_LineString', 'ST_MultiLineString') then
         ST_Length(ST_Intersection(h.geom, v_proj_valid)::geography)
@@ -885,15 +892,15 @@ begin
   for r_rec in
     select 
       q.id,
-      coalesce(nullif(q.nm_comunid, ''), nullif(q.nm_tq, ''), 'Território Quilombola') as f_nome,
-      coalesce(nullif(q.cd_quilomb, ''), nullif(q.cd_tq, ''), '') as f_cod,
-      coalesce(nullif(q.fase, ''), nullif(q.status, ''), '') as f_fase,
-      coalesce(nullif(q.cd_uf, ''), nullif(q.sg_uf, ''), '') as f_uf,
-      coalesce(q.nm_municip, '') as f_municipio,
-      coalesce(q.nr_process, '') as f_processo,
-      coalesce(q.st_titulad, '') as f_titulado,
-      coalesce(q.nr_familia, '') as f_familias,
-      coalesce(q.area_calc_, q.nr_area_ha, 0) as f_area_ha,
+      coalesce(nullif(q.nm_comunid::text, ''), 'Território Quilombola') as f_nome,
+      coalesce(q.cd_quilomb::text, '') as f_cod,
+      coalesce(q.fase::text, '') as f_fase,
+      coalesce(q.cd_uf::text, '') as f_uf,
+      coalesce(q.nm_municip::text, '') as f_municipio,
+      coalesce(q.nr_process::text, '') as f_processo,
+      coalesce(q.st_titulad::text, '') as f_titulado,
+      coalesce(q.nr_familia::text, '') as f_familias,
+      coalesce(q.area_calc_::numeric, 0) as f_area_ha,
       ST_Intersects(q.geom, v_proj_valid) as touches,
       case when ST_Intersects(q.geom, v_proj_valid) and v_is_poly then
         ST_Area(ST_Intersection(q.geom, v_proj_valid)::geography) / 10000.0
@@ -981,10 +988,16 @@ begin
 
   for r_rec in
     select 
-      a.id, a.cd_sipra, coalesce(a.nome_proje, a.nm_localid) as nome,
-      coalesce(a.municipio, a.nm_municip) as municipio,
-      coalesce(a.uf, a.sigla_uf) as uf,
-      a.area_hecta, a.capacidade, a.num_famili, a.fase, a.sr,
+      a.id,
+      a.cd_sipra,
+      coalesce(a.nome_proje::text, 'Projeto de Assentamento') as nome,
+      a.municipio,
+      a.uf,
+      coalesce(a.area_calc_::text, a.area_hecta::text) as area_hecta,
+      a.capacidade,
+      a.num_famili,
+      a.fase::text as fase,
+      a.sr,
       ST_Intersects(a.geom, v_proj_valid) as touches,
       case when ST_Intersects(a.geom, v_proj_valid) and v_is_poly and ST_GeometryType(a.geom) in ('ST_Polygon', 'ST_MultiPolygon') then
         ST_Area(ST_Intersection(a.geom, v_proj_valid)::geography) / 10000.0
@@ -1069,7 +1082,15 @@ begin
 
   for r_rec in
     select 
-      ei.id, ei.num_tad, ei.serie_tad, ei.num_auto_infracao, ei.nome_embargado, ei.municipio, ei.uf, ei.des_tad, ei.qtd_area_embargada,
+      ei.id,
+      ei.num_tad,
+      ei.serie_tad,
+      ei.num_auto_i as num_auto_infracao,
+      ei.nome_embar as nome_embargado,
+      ei.municipio,
+      ei.uf,
+      ei.des_tad,
+      ei.qtd_area_e as qtd_area_embargada,
       ST_Intersects(ei.geom, v_proj_valid) as touches,
       case when ST_Intersects(ei.geom, v_proj_valid) and v_is_poly then
         ST_Area(ST_Intersection(ei.geom, v_proj_valid)::geography) / 10000.0
@@ -1098,8 +1119,8 @@ begin
       );
       v_isects := v_isects || jsonb_build_object(
         'featureId', r_rec.id,
-        'name', 'Embargo IBAMA ' || coalesce(r_rec.num_tad, r_rec.num_auto_infracao),
-        'coordStr', 'Embargo Federal IBAMA: ' || coalesce(r_rec.num_tad, r_rec.num_auto_infracao)
+        'name', 'Embargo IBAMA ' || coalesce(r_rec.num_tad, r_rec.num_auto_infracao, ''),
+        'coordStr', 'Embargo Federal IBAMA: ' || coalesce(r_rec.num_tad, r_rec.num_auto_infracao, '')
       );
     else
       v_nears := v_nears || jsonb_build_object(
