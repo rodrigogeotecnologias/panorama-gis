@@ -219,8 +219,14 @@ def sync_layer(layer, db_connection_str, work_dir):
         log(f"Baixando pacote oficial de {layer['url']}...")
         ok = download_file(layer["url"], zip_path)
         if not ok:
-            log(f"Falha ao baixar arquivo ou tamanho insuficiente para {key}.")
-            return False
+            # Plano B: cópia de contingência versionada no repositório (etl/fallback/<key>.zip)
+            fb = os.path.join(os.path.dirname(__file__), "fallback", f"{key}.zip")
+            if os.path.exists(fb):
+                log(f"Fonte online indisponível para {key}. Usando cópia de contingência do repositório: {fb}")
+                shutil.copyfile(fb, zip_path)
+            else:
+                log(f"Falha ao baixar arquivo ou tamanho insuficiente para {key}.")
+                return False
     except Exception as e:
         log(f"Exceção durante download de {key}: {e}")
         return False

@@ -27,6 +27,9 @@ etl/test_download/
 *.sbn
 *.sbx
 
+# Cópias de contingência do INCRA (servidor bloqueia IPs do GitHub Actions)
+!etl/fallback/*.zip
+
 # Arquivos de Sistema e IDEs
 .DS_Store
 Thumbs.db
