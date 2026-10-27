@@ -71,11 +71,19 @@ LAYERS = [
     },
     {
         "key": "iphan",
-        "label": "Sítios Arqueológicos",
+        "label": "Sítios Arqueológicos (Pontos)",
         "agency": "IPHAN / SICG",
         "table": "gov_iphan",
         "url": "https://geoserver.iphan.gov.br/geoserver/SICG/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SICG:sitios&outputFormat=shape-zip",
         "geom_type": "Point"
+    },
+    {
+        "key": "iphan_pol",
+        "label": "Sítios Arqueológicos (Poligonais)",
+        "agency": "IPHAN / SICG",
+        "table": "gov_iphan_poly",
+        "url": "http://geoserver.iphan.gov.br/geoserver/SICG/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SICG:sitios_pol&outputFormat=shape-zip",
+        "geom_type": "MultiPolygon"
     },
     {
         "key": "quilombolas",
@@ -98,7 +106,7 @@ LAYERS = [
         "label": "Imóveis Certificados (SIGEF)",
         "agency": "INCRA / SIGEF",
         "table": "gov_sigef",
-        "url": "https://certificacao.incra.gov.br/csv_shp/zip/Sigef%20Brasil.zip",
+        "url": os.environ.get("SIGEF_URL", "https://certificacao.incra.gov.br/csv_shp/zip/Sigef%20Brasil_DF.zip"),
         "geom_type": "MultiPolygon"
     },
     {
