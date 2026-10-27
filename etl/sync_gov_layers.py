@@ -130,12 +130,41 @@ LAYERS = [
 def log(msg):
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
 
-def run_command(cmd):
-    p = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    if p.returncode != 0:
-        log(f"ERRO no comando: {cmd}\nSaída: {p.stderr}")
+def run_command(cmd, timeout=300):
+    try:
+        p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        if p.returncode != 0:
+            log(f"ERRO no comando: {cmd}\nSaída: {p.stderr}")
+            return False
+        return True
+    except subprocess.TimeoutExpired:
+        log(f"ERRO: Comando expirou tempo limite de {timeout}s: {cmd}")
         return False
-    return True
+    except Exception as e:
+        log(f"ERRO inesperado ao executar comando: {e}")
+        return False
+
+def test_db_connection(db_conn):
+    log("Testando conectividade inicial com o banco de dados Supabase PostGIS...")
+    try:
+        p = subprocess.run(
+            f'psql "{db_conn}" -c "SELECT PostGIS_Version();"',
+            shell=True, capture_output=True, text=True, timeout=15
+        )
+        if p.returncode != 0:
+            log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            log("FALHA CRÍTICA DE CONEXÃO COM O BANCO DE DADOS:")
+            log(p.stderr)
+            log("DICA: Certifique-se de usar o Connection Pooler IPv4 do Supabase:")
+            log("postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres")
+            log("O host direto (db.xxx.supabase.co) requer IPv6, incompatível com GitHub Actions IPv4.")
+            log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            return False
+        log(f"Conexão com PostGIS confirmada com sucesso: {p.stdout.strip()}")
+        return True
+    except Exception as e:
+        log(f"Erro ao testar conexão com o banco: {e}")
+        return False
 
 def download_file(url, out_path):
     headers = {
@@ -246,7 +275,12 @@ def main():
     db_conn = os.environ.get("SUPABASE_DB_URL")
     if not db_conn:
         log("ERRO: Variável de ambiente SUPABASE_DB_URL não configurada.")
-        log("Exemplo: postgresql://postgres:SENHA@db.SEU_PROJETO.supabase.co:5432/postgres")
+        log("Exemplo: postgresql://postgres.PROJECT_REF:SENHA@aws-0-sa-east-1.pooler.supabase.com:5432/postgres")
+        sys.exit(1)
+
+    # 1. Teste de Sanidade de Conexão (Fail Fast em <15s sem esperar downloads)
+    if not test_db_connection(db_conn):
+        log("ABORTANDO: Conexão com o PostGIS não pôde ser estabelecida.")
         sys.exit(1)
 
     work_dir = os.path.join(os.path.dirname(__file__), "tmp_etl")
@@ -262,6 +296,12 @@ def main():
 
     log(f"ETL finalizado: {success_count}/{len(LAYERS)} camadas sincronizadas com sucesso.")
     shutil.rmtree(work_dir, ignore_errors=True)
+
+    if success_count < len(LAYERS):
+        log(f"ALERTA: Apenas {success_count} de {len(LAYERS)} camadas foram concluídas.")
+        sys.exit(1)
+
+    log("SUCESSO ABSOLUTO: Todas as camadas oficiais foram ingeridas no PostGIS com sucesso!")
 
 if __name__ == "__main__":
     main()
