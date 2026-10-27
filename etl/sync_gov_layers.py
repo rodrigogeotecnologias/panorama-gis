@@ -277,7 +277,7 @@ def is_layer_fresh(layer, db_conn, work_dir):
         pass
     return False
 
-def download_file(url, out_path, max_retries=3):
+def download_file(url, out_path, max_retries=2):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "*/*",
@@ -288,7 +288,7 @@ def download_file(url, out_path, max_retries=3):
     for attempt in range(1, max_retries + 1):
         try:
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, context=ctx, timeout=180) as resp, open(out_path, "wb") as out:
+            with urllib.request.urlopen(req, context=ctx, timeout=90) as resp, open(out_path, "wb") as out:
                 shutil.copyfileobj(resp, out)
             if os.path.exists(out_path) and os.path.getsize(out_path) > 1000:
                 return True

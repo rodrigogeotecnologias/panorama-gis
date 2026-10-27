@@ -71,6 +71,15 @@ create table if not exists public.gov_canie (
 create index if not exists idx_gov_canie_geom on public.gov_canie using gist (geom);
 
 -- 3.3 Sítios Arqueológicos — Pontos e Polígonos (IPHAN / SICG)
+do $$ begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'gov_iphan' and column_name = 'geom_point'
+  ) then
+    drop table public.gov_iphan cascade;
+  end if;
+end $$;
+
 create table if not exists public.gov_iphan (
   id          bigserial primary key,
   co_iphan    text,
