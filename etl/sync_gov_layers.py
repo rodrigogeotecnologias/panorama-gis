@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 PANORAMA GIS â€” Pipeline de ETL Automatizado para Camadas Oficiais Federais
