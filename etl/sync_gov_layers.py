@@ -251,18 +251,20 @@ def sync_layer(layer, db_connection_str, work_dir):
     log(f"Arquivo vetorial localizado: {vector_file}")
 
     # 3. Ingestão via ogr2ogr no PostGIS (em staging)
-    # ogr2ogr garante reprojeção automática para SIRGAS 2000 (EPSG:4674),
-    # transcodificação de caracteres Latin-1 para UTF-8 (--config SHAPE_ENCODING LATIN1),
-    # conversão de datas inválidas (0000/00/00 para NULL) e tolerância a falhas (-skipfailures)
+    # - Reprojeção automática para SIRGAS 2000 (EPSG:4674)
+    # - SHAPE_ENCODING LATIN1: converte acentos dos DBFs governamentais para UTF-8
+    # - OGR_EMPTY_DATE_AS_NULL: converte datas inválidas (0000/00/00) em NULL
+    # - PG_USE_COPY + -gt 65536: carga em lote (COPY), essencial com banco remoto (latência EUA -> São Paulo).
+    #   NÃO usar -skipfailures: ele força 1 transação por feição e torna a carga ~1000x mais lenta.
     ogr_cmd = (
         f'ogr2ogr -f "PostgreSQL" "{db_connection_str}" "{vector_file}" '
         f'-nln "{staging_table}" -overwrite -t_srs EPSG:4674 -lco GEOMETRY_NAME=geom '
-        f'-lco FID=id -lco SPATIAL_INDEX=GIST -nlt PROMOTE_TO_MULTI '
-        f'--config SHAPE_ENCODING LATIN1 --config OGR_EMPTY_DATE_AS_NULL YES -skipfailures'
+        f'-lco FID=id -lco SPATIAL_INDEX=GIST -nlt PROMOTE_TO_MULTI -gt 65536 '
+        f'--config SHAPE_ENCODING LATIN1 --config OGR_EMPTY_DATE_AS_NULL YES --config PG_USE_COPY YES'
     )
     
     log(f"Ingerindo dados na tabela temporária {staging_table}...")
-    if not run_command(ogr_cmd):
+    if not run_command(ogr_cmd, timeout=2400):
         log(f"Falha na importação ogr2ogr de {key}.")
         return False
 
