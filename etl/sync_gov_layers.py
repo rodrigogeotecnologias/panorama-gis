@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PANORAMA GIS — Pipeline de ETL Automatizado para Camadas Oficiais Federais
+PANORAMA GIS â€” Pipeline de ETL Automatizado para Camadas Oficiais Federais
 Executado semanalmente via GitHub Actions ou cron para alimentar o PostGIS (Supabase).
-- Download automático das bases oficiais (WFS SHAPE-ZIP / FTP)
-- Validação topológica rigorosa (ST_MakeValid, remoção de vértices duplicados)
-- Ingestão em tabelas _staging com substituição atômica (zero downtime)
-- Atualização da tabela de auditoria gov_layers_metadata
+- Download automÃ¡tico das bases oficiais (WFS SHAPE-ZIP / FTP)
+- ValidaÃ§Ã£o topolÃ³gica rigorosa (ST_MakeValid, remoÃ§Ã£o de vÃ©rtices duplicados)
+- IngestÃ£o em tabelas _staging com substituiÃ§Ã£o atÃ´mica (zero downtime)
+- AtualizaÃ§Ã£o da tabela de auditoria gov_layers_metadata
 """
 
 import os
@@ -25,7 +25,7 @@ INDE = "https://geoservicos.inde.gov.br/geoserver"
 LAYERS = [
     {
         "key": "uc",
-        "label": "Unidades de Conservação",
+        "label": "Unidades de ConservaÃ§Ã£o",
         "agency": "MMA / CNUC",
         "table": "gov_uc",
         "url": f"{INDE}/MMA/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MMA:cnuc_26_07_31&outputFormat=shape-zip",
@@ -41,7 +41,7 @@ LAYERS = [
     },
     {
         "key": "embargos",
-        "label": "Áreas Embargadas",
+        "label": "Ãreas Embargadas",
         "agency": "ICMBio",
         "table": "gov_embargos",
         "url": f"{INDE}/ICMBio/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ICMBio:embargos_icmbio&outputFormat=shape-zip",
@@ -49,7 +49,7 @@ LAYERS = [
     },
     {
         "key": "funai",
-        "label": "Terras Indígenas",
+        "label": "Terras IndÃ­genas",
         "agency": "FUNAI",
         "table": "gov_funai",
         "url": "https://geoserver.funai.gov.br/geoserver/Funai/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=Funai:tis_poligonais&maxFeatures=1000&outputFormat=shape-zip",
@@ -57,7 +57,7 @@ LAYERS = [
     },
     {
         "key": "rodovias",
-        "label": "Malha Rodoviária Oficial (Federal)",
+        "label": "Malha RodoviÃ¡ria Oficial (Federal)",
         "agency": "DNIT / SNV",
         "table": "gov_rodovias",
         "url": f"{INDE}/DNIT/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=DNIT:snv_202507a&outputFormat=shape-zip",
@@ -65,7 +65,7 @@ LAYERS = [
     },
     {
         "key": "rodovias_estaduais",
-        "label": "Base Rodoviária Estadual Unificada (SRE)",
+        "label": "Base RodoviÃ¡ria Estadual Unificada (SRE)",
         "agency": "DNIT / SRE / INDE",
         "table": "gov_rodovias_estaduais",
         "url": f"{INDE}/DNIT/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=DNIT:cide_2024_25&outputFormat=shape-zip",
@@ -73,7 +73,7 @@ LAYERS = [
     },
     {
         "key": "iphan",
-        "label": "Sítios Arqueológicos (Pontos)",
+        "label": "SÃ­tios ArqueolÃ³gicos (Pontos)",
         "agency": "IPHAN / SICG",
         "table": "gov_iphan",
         "url": "https://geoserver.iphan.gov.br/geoserver/SICG/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SICG:sitios&outputFormat=shape-zip",
@@ -81,7 +81,7 @@ LAYERS = [
     },
     {
         "key": "iphan_pol",
-        "label": "Sítios Arqueológicos (Poligonais)",
+        "label": "SÃ­tios ArqueolÃ³gicos (Poligonais)",
         "agency": "IPHAN / SICG",
         "table": "gov_iphan_poly",
         "url": "http://geoserver.iphan.gov.br/geoserver/SICG/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SICG:sitios_pol&outputFormat=shape-zip",
@@ -89,27 +89,30 @@ LAYERS = [
     },
     {
         "key": "quilombolas",
-        "label": "Territórios Quilombolas",
-        "agency": "INCRA / Acervo Fundiário (Decreto nº 4.887/2003)",
+        "label": "TerritÃ³rios Quilombolas",
+        "agency": "INCRA / Acervo FundiÃ¡rio (Decreto nÂº 4.887/2003)",
         "table": "gov_quilombolas",
         "url": "https://certificacao.incra.gov.br/csv_shp/zip/%C3%81reas%20de%20Quilombolas.zip",
         "geom_type": "MultiPolygon"
     },
     {
         "key": "assentamentos",
-        "label": "Assentamentos da Reforma Agrária",
-        "agency": "INCRA / Acervo Fundiário (Lei nº 4.504/1964)",
+        "label": "Assentamentos da Reforma AgrÃ¡ria",
+        "agency": "INCRA / Acervo FundiÃ¡rio (Lei nÂº 4.504/1964)",
         "table": "gov_assentamentos",
         "url": "https://certificacao.incra.gov.br/csv_shp/zip/Assentamento%20Brasil.zip",
         "geom_type": "MultiPolygon"
     },
     {
         "key": "sigef",
-        "label": "Imóveis Certificados (SIGEF)",
+        "label": "ImÃ³veis Certificados (SIGEF)",
         "agency": "INCRA / SIGEF",
         "table": "gov_sigef",
-        "url": os.environ.get("SIGEF_URL", "https://certificacao.incra.gov.br/csv_shp/zip/Sigef%20Brasil_DF.zip"),
-        "geom_type": "MultiPolygon"
+        # SIGEF nacional (27 UFs, ~3,2 GB zipado) NÃƒO cabe no Supabase Free (500 MB).
+        # SÃ³ Ã© carregado quando SIGEF_URL for definido (ex.: apÃ³s upgrade para Pro). AtÃ© lÃ¡ o app consulta ao vivo.
+        "url": os.environ.get("SIGEF_URL", ""),
+        "geom_type": "MultiPolygon",
+        "optional": True
     },
     {
         "key": "hidrografia",
@@ -121,7 +124,7 @@ LAYERS = [
     },
     {
         "key": "embargos_ibama",
-        "label": "Áreas Embargadas (IBAMA)",
+        "label": "Ãreas Embargadas (IBAMA)",
         "agency": "IBAMA / PAMGIA",
         "table": "gov_embargos_ibama",
         "url": "https://ftp-pamgia.ibama.gov.br/dados/adm_embargos_ibama_a.zip",
@@ -144,7 +147,7 @@ def run_command(cmd, timeout=300):
             timeout=timeout
         )
         if p.returncode != 0:
-            log(f"ERRO no comando: {cmd}\nSaída: {p.stderr}")
+            log(f"ERRO no comando: {cmd}\nSaÃ­da: {p.stderr}")
             return False
         return True
     except subprocess.TimeoutExpired:
@@ -168,17 +171,17 @@ def test_db_connection(db_conn):
         )
         if p.returncode != 0:
             log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            log("FALHA CRÍTICA DE CONEXÃO COM O BANCO DE DADOS:")
+            log("FALHA CRÃTICA DE CONEXÃƒO COM O BANCO DE DADOS:")
             log(p.stderr)
             log("DICA: Certifique-se de usar o Connection Pooler IPv4 do Supabase:")
             log("postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres")
-            log("O host direto (db.xxx.supabase.co) requer IPv6, incompatível com GitHub Actions IPv4.")
+            log("O host direto (db.xxx.supabase.co) requer IPv6, incompatÃ­vel com GitHub Actions IPv4.")
             log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             return False
-        log(f"Conexão com PostGIS confirmada com sucesso: {p.stdout.strip()}")
+        log(f"ConexÃ£o com PostGIS confirmada com sucesso: {p.stdout.strip()}")
         return True
     except Exception as e:
-        log(f"Erro ao testar conexão com o banco: {e}")
+        log(f"Erro ao testar conexÃ£o com o banco: {e}")
         return False
 
 def download_file(url, out_path, max_retries=2):
@@ -187,7 +190,7 @@ def download_file(url, out_path, max_retries=2):
         "Accept": "*/*",
         "Referer": "https://www.gov.br/"
     }
-    # Cria contexto SSL flexível para aceitar certificados governamentais (ex: ICP-Brasil da FUNAI)
+    # Cria contexto SSL flexÃ­vel para aceitar certificados governamentais (ex: ICP-Brasil da FUNAI)
     ctx = ssl._create_unverified_context()
 
     for attempt in range(1, max_retries + 1):
@@ -212,26 +215,26 @@ def sync_layer(layer, db_connection_str, work_dir):
     zip_path = os.path.join(work_dir, f"{key}.zip")
     extract_dir = os.path.join(work_dir, key)
 
-    log(f"--- Iniciando sincronização: {layer['label']} ({layer['agency']}) ---")
+    log(f"--- Iniciando sincronizaÃ§Ã£o: {layer['label']} ({layer['agency']}) ---")
     
     # 1. Download
     try:
         log(f"Baixando pacote oficial de {layer['url']}...")
         ok = download_file(layer["url"], zip_path)
         if not ok:
-            # Plano B: cópia de contingência versionada no repositório (etl/fallback/<key>.zip)
+            # Plano B: cÃ³pia de contingÃªncia versionada no repositÃ³rio (etl/fallback/<key>.zip)
             fb = os.path.join(os.path.dirname(__file__), "fallback", f"{key}.zip")
             if os.path.exists(fb):
-                log(f"Fonte online indisponível para {key}. Usando cópia de contingência do repositório: {fb}")
+                log(f"Fonte online indisponÃ­vel para {key}. Usando cÃ³pia de contingÃªncia do repositÃ³rio: {fb}")
                 shutil.copyfile(fb, zip_path)
             else:
                 log(f"Falha ao baixar arquivo ou tamanho insuficiente para {key}.")
                 return False
     except Exception as e:
-        log(f"Exceção durante download de {key}: {e}")
+        log(f"ExceÃ§Ã£o durante download de {key}: {e}")
         return False
 
-    # 2. Descompactação
+    # 2. DescompactaÃ§Ã£o
     os.makedirs(extract_dir, exist_ok=True)
     try:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -256,12 +259,12 @@ def sync_layer(layer, db_connection_str, work_dir):
 
     log(f"Arquivo vetorial localizado: {vector_file}")
 
-    # 3. Ingestão via ogr2ogr no PostGIS (em staging)
-    # - Reprojeção automática para SIRGAS 2000 (EPSG:4674)
+    # 3. IngestÃ£o via ogr2ogr no PostGIS (em staging)
+    # - ReprojeÃ§Ã£o automÃ¡tica para SIRGAS 2000 (EPSG:4674)
     # - SHAPE_ENCODING LATIN1: converte acentos dos DBFs governamentais para UTF-8
-    # - OGR_EMPTY_DATE_AS_NULL: converte datas inválidas (0000/00/00) em NULL
-    # - PG_USE_COPY + -gt 65536: carga em lote (COPY), essencial com banco remoto (latência EUA -> São Paulo).
-    #   NÃO usar -skipfailures: ele força 1 transação por feição e torna a carga ~1000x mais lenta.
+    # - OGR_EMPTY_DATE_AS_NULL: converte datas invÃ¡lidas (0000/00/00) em NULL
+    # - PG_USE_COPY + -gt 65536: carga em lote (COPY), essencial com banco remoto (latÃªncia EUA -> SÃ£o Paulo).
+    #   NÃƒO usar -skipfailures: ele forÃ§a 1 transaÃ§Ã£o por feiÃ§Ã£o e torna a carga ~1000x mais lenta.
     ogr_cmd = (
         f'ogr2ogr -f "PostgreSQL" "{db_connection_str}" "{vector_file}" '
         f'-nln "{staging_table}" -overwrite -t_srs EPSG:4674 -lco GEOMETRY_NAME=geom '
@@ -269,24 +272,24 @@ def sync_layer(layer, db_connection_str, work_dir):
         f'--config SHAPE_ENCODING LATIN1 --config OGR_EMPTY_DATE_AS_NULL YES --config PG_USE_COPY YES'
     )
     
-    log(f"Ingerindo dados na tabela temporária {staging_table}...")
+    log(f"Ingerindo dados na tabela temporÃ¡ria {staging_table}...")
     if not run_command(ogr_cmd, timeout=2400):
-        log(f"Falha na importação ogr2ogr de {key}.")
+        log(f"Falha na importaÃ§Ã£o ogr2ogr de {key}.")
         return False
 
-    # 4. Troca Atômica de Tabelas e Atualização de Metadados via psql / PostGIS
+    # 4. Troca AtÃ´mica de Tabelas e AtualizaÃ§Ã£o de Metadados via psql / PostGIS
     swap_sql = f"""
     BEGIN;
-    -- Garante geometrias válidas
+    -- Garante geometrias vÃ¡lidas
     UPDATE public.{staging_table} SET geom = ST_MakeValid(ST_RemoveRepeatedPoints(geom)) WHERE NOT ST_IsValid(geom);
     
-    -- Troca atômica de tabelas
+    -- Troca atÃ´mica de tabelas
     DROP TABLE IF EXISTS public.{table}_old CASCADE;
     ALTER TABLE IF EXISTS public.{table} RENAME TO {table}_old;
     ALTER TABLE public.{staging_table} RENAME TO {table};
     DROP TABLE IF EXISTS public.{table}_old CASCADE;
 
-    -- Garante permissões de leitura pública e RLS na nova tabela
+    -- Garante permissÃµes de leitura pÃºblica e RLS na nova tabela
     GRANT SELECT ON public.{table} TO anon, authenticated;
     ALTER TABLE public.{table} ENABLE ROW LEVEL SECURITY;
     DROP POLICY IF EXISTS p_select_{table} ON public.{table};
@@ -301,7 +304,7 @@ def sync_layer(layer, db_connection_str, work_dir):
       sync_status = 'ok',
       sync_message = 'Sincronizado com sucesso via ETL';
 
-    -- Garante permissões na tabela de metadados
+    -- Garante permissÃµes na tabela de metadados
     GRANT SELECT ON public.gov_layers_metadata TO anon, authenticated;
     ALTER TABLE public.gov_layers_metadata ENABLE ROW LEVEL SECURITY;
     DROP POLICY IF EXISTS p_select_meta ON public.gov_layers_metadata;
@@ -315,9 +318,9 @@ def sync_layer(layer, db_connection_str, work_dir):
         f.write(swap_sql)
 
     psql_cmd = f'psql "{db_connection_str}" -f "{sql_path}"'
-    log(f"Executando transação atômica de troca de tabela para {table}...")
+    log(f"Executando transaÃ§Ã£o atÃ´mica de troca de tabela para {table}...")
     if not run_command(psql_cmd):
-        log(f"Falha na transação SQL de {key}.")
+        log(f"Falha na transaÃ§Ã£o SQL de {key}.")
         return False
 
     log(f"SUCESSO: Camada {layer['label']} atualizada com sucesso no PostGIS!")
@@ -326,34 +329,39 @@ def sync_layer(layer, db_connection_str, work_dir):
 def main():
     db_conn = os.environ.get("SUPABASE_DB_URL")
     if not db_conn:
-        log("ERRO: Variável de ambiente SUPABASE_DB_URL não configurada.")
+        log("ERRO: VariÃ¡vel de ambiente SUPABASE_DB_URL nÃ£o configurada.")
         log("Exemplo: postgresql://postgres.PROJECT_REF:SENHA@aws-0-sa-east-1.pooler.supabase.com:5432/postgres")
         sys.exit(1)
 
-    # 1. Teste de Sanidade de Conexão (Fail Fast em <15s sem esperar downloads)
+    # 1. Teste de Sanidade de ConexÃ£o (Fail Fast em <15s sem esperar downloads)
     if not test_db_connection(db_conn):
-        log("ABORTANDO: Conexão com o PostGIS não pôde ser estabelecida.")
+        log("ABORTANDO: ConexÃ£o com o PostGIS nÃ£o pÃ´de ser estabelecida.")
         sys.exit(1)
 
     work_dir = os.path.join(os.path.dirname(__file__), "tmp_etl")
     os.makedirs(work_dir, exist_ok=True)
 
+    active_layers = [l for l in LAYERS if not (l.get("optional") and not l.get("url"))]
+    for l in LAYERS:
+        if l not in active_layers:
+            log(f"Camada {l['key']} ignorada (opcional, sem URL configurada).")
+
     success_count = 0
-    for layer in LAYERS:
+    for layer in active_layers:
         try:
             if sync_layer(layer, db_conn, work_dir):
                 success_count += 1
         except Exception as e:
             log(f"Erro inesperado na camada {layer['key']}: {e}")
 
-    log(f"ETL finalizado: {success_count}/{len(LAYERS)} camadas sincronizadas com sucesso.")
+    log(f"ETL finalizado: {success_count}/{len(active_layers)} camadas sincronizadas com sucesso.")
     shutil.rmtree(work_dir, ignore_errors=True)
 
     if success_count == 0:
-        log("ERRO FATAL: Nenhuma camada pôde ser sincronizada com o banco.")
+        log("ERRO FATAL: Nenhuma camada pÃ´de ser sincronizada com o banco.")
         sys.exit(1)
-    elif success_count < len(LAYERS):
-        log(f"PARCIAL: {success_count} de {len(LAYERS)} camadas foram sincronizadas no PostGIS. Algumas fontes externas apresentaram instabilidade temporária e serão reprocessadas no próximo agendamento.")
+    elif success_count < len(active_layers):
+        log(f"PARCIAL: {success_count} de {len(active_layers)} camadas foram sincronizadas no PostGIS. Algumas fontes externas apresentaram instabilidade temporÃ¡ria e serÃ£o reprocessadas no prÃ³ximo agendamento.")
     else:
         log("SUCESSO ABSOLUTO: Todas as camadas oficiais foram ingeridas no PostGIS com sucesso!")
 

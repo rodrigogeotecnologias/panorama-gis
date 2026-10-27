@@ -376,6 +376,10 @@
 
   const ORDER = ['canie', 'iphan', 'rodovias', 'hidrografia', 'uc', 'funai', 'embargos', 'sigef', 'quilombolas', 'assentamentos', 'embargos_ibama'];
 
+  // Camadas que ainda não estão 100% no PostGIS (base nacional grande demais para o plano atual do Supabase).
+  // Continuam sendo analisadas ao vivo no serviço oficial. Remover da lista quando carregadas por completo.
+  const DB_LIVE_ONLY = ['sigef'];
+
   // Todas as camadas agora possuem serviço ativo e funcional
   const PENDING = [];
 
@@ -1172,10 +1176,19 @@
 
         if (!error && data && data.ok && Array.isArray(data.cards) && data.cards.length > 0) {
           console.log(`[GOV] Análise espacial concluída via PostGIS com sucesso (${data.cards.length} camadas analisadas no banco).`);
-          const filteredCards = (keys && keys.length ? keys : ORDER)
+          // Camadas ainda NÃO carregadas por completo no banco (ex.: SIGEF nacional) são analisadas ao vivo
+          // nos serviços oficiais, para nunca gerar falso "sem sobreposição" por base incompleta.
+          const wanted = keys && keys.length ? keys : ORDER;
+          const dbKeys = wanted.filter((k) => !DB_LIVE_ONLY.includes(k));
+          const liveKeys = wanted.filter((k) => DB_LIVE_ONLY.includes(k) && LAYERS[k]);
+          const dbCards = dbKeys
             .map((k) => data.cards.find((c) => c.key === k))
             .filter(Boolean)
             .map((r) => buildCard(LAYERS[r.key], r));
+          const liveResults = await Promise.all(liveKeys.map((k) => analyzeLayer(LAYERS[k], feat, simBufferM)));
+          const liveCards = liveResults.map((r) => buildCard(LAYERS[r.key], r));
+          const byKey = new Map([...dbCards, ...liveCards].map((c) => [c.key, c]));
+          const filteredCards = wanted.map((k) => byKey.get(k)).filter(Boolean);
           if (filteredCards.length) return filteredCards;
         } else if (error) {
           console.warn('[GOV] PostGIS RPC retornou aviso/erro (acionando fallback local WFS):', error.message);
