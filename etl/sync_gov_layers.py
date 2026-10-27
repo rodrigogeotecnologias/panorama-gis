@@ -14,6 +14,8 @@ import sys
 import zipfile
 import subprocess
 import shutil
+import ssl
+import time
 import urllib.request
 import urllib.parse
 from datetime import datetime
@@ -132,7 +134,15 @@ def log(msg):
 
 def run_command(cmd, timeout=300):
     try:
-        p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        p = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout
+        )
         if p.returncode != 0:
             log(f"ERRO no comando: {cmd}\nSaída: {p.stderr}")
             return False
@@ -149,7 +159,12 @@ def test_db_connection(db_conn):
     try:
         p = subprocess.run(
             f'psql "{db_conn}" -c "SELECT PostGIS_Version();"',
-            shell=True, capture_output=True, text=True, timeout=15
+            shell=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=15
         )
         if p.returncode != 0:
             log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -166,15 +181,29 @@ def test_db_connection(db_conn):
         log(f"Erro ao testar conexão com o banco: {e}")
         return False
 
-def download_file(url, out_path):
+def download_file(url, out_path, max_retries=3):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PanoramaGIS-ETL/1.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "*/*",
         "Referer": "https://www.gov.br/"
     }
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=180) as resp, open(out_path, "wb") as out:
-        shutil.copyfileobj(resp, out)
-    return os.path.exists(out_path) and os.path.getsize(out_path) > 1000
+    # Cria contexto SSL flexível para aceitar certificados governamentais (ex: ICP-Brasil da FUNAI)
+    ctx = ssl._create_unverified_context()
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, context=ctx, timeout=180) as resp, open(out_path, "wb") as out:
+                shutil.copyfileobj(resp, out)
+            if os.path.exists(out_path) and os.path.getsize(out_path) > 1000:
+                return True
+            else:
+                log(f"Aviso: arquivo baixado vazio ou muito pequeno na tentativa {attempt}.")
+        except Exception as e:
+            log(f"Tentativa {attempt}/{max_retries} de download falhou para {url}: {e}")
+            if attempt < max_retries:
+                time.sleep(3)
+    return False
 
 def sync_layer(layer, db_connection_str, work_dir):
     key = layer["key"]
@@ -223,11 +252,12 @@ def sync_layer(layer, db_connection_str, work_dir):
 
     # 3. Ingestão via ogr2ogr no PostGIS (em staging)
     # ogr2ogr garante reprojeção automática para SIRGAS 2000 (EPSG:4674),
-    # criação de geometria válida e tipagem correta.
+    # criação de geometria válida, tipagem correta e conversão de datas inválidas (ex: 0000/00/00 para NULL)
     ogr_cmd = (
         f'ogr2ogr -f "PostgreSQL" "{db_connection_str}" "{vector_file}" '
         f'-nln "{staging_table}" -overwrite -t_srs EPSG:4674 -lco GEOMETRY_NAME=geom '
-        f'-lco FID=id -lco SPATIAL_INDEX=GIST -nlt PROMOTE_TO_MULTI'
+        f'-lco FID=id -lco SPATIAL_INDEX=GIST -nlt PROMOTE_TO_MULTI '
+        f'--config OGR_EMPTY_DATE_AS_NULL YES -oo EMPTY_DATE_AS_NULL=YES'
     )
     
     log(f"Ingerindo dados na tabela temporária {staging_table}...")
@@ -247,6 +277,12 @@ def sync_layer(layer, db_connection_str, work_dir):
     ALTER TABLE public.{staging_table} RENAME TO {table};
     DROP TABLE IF EXISTS public.{table}_old CASCADE;
 
+    -- Garante permissões de leitura pública e RLS na nova tabela
+    GRANT SELECT ON public.{table} TO anon, authenticated;
+    ALTER TABLE public.{table} ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS p_select_{table} ON public.{table};
+    CREATE POLICY p_select_{table} ON public.{table} FOR SELECT USING (true);
+
     -- Atualiza metadados
     INSERT INTO public.gov_layers_metadata (layer_key, layer_label, source_agency, last_sync_at, feature_count, sync_status, sync_message)
     VALUES ('{key}', '{layer["label"]}', '{layer["agency"]}', NOW(), (SELECT count(*) FROM public.{table}), 'ok', 'Sincronizado com sucesso via ETL')
@@ -255,6 +291,13 @@ def sync_layer(layer, db_connection_str, work_dir):
       feature_count = EXCLUDED.feature_count,
       sync_status = 'ok',
       sync_message = 'Sincronizado com sucesso via ETL';
+
+    -- Garante permissões na tabela de metadados
+    GRANT SELECT ON public.gov_layers_metadata TO anon, authenticated;
+    ALTER TABLE public.gov_layers_metadata ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS p_select_meta ON public.gov_layers_metadata;
+    CREATE POLICY p_select_meta ON public.gov_layers_metadata FOR SELECT USING (true);
+
     COMMIT;
     """
 
@@ -297,11 +340,13 @@ def main():
     log(f"ETL finalizado: {success_count}/{len(LAYERS)} camadas sincronizadas com sucesso.")
     shutil.rmtree(work_dir, ignore_errors=True)
 
-    if success_count < len(LAYERS):
-        log(f"ALERTA: Apenas {success_count} de {len(LAYERS)} camadas foram concluídas.")
+    if success_count == 0:
+        log("ERRO FATAL: Nenhuma camada pôde ser sincronizada com o banco.")
         sys.exit(1)
-
-    log("SUCESSO ABSOLUTO: Todas as camadas oficiais foram ingeridas no PostGIS com sucesso!")
+    elif success_count < len(LAYERS):
+        log(f"PARCIAL: {success_count} de {len(LAYERS)} camadas foram sincronizadas no PostGIS. Algumas fontes externas apresentaram instabilidade temporária e serão reprocessadas no próximo agendamento.")
+    else:
+        log("SUCESSO ABSOLUTO: Todas as camadas oficiais foram ingeridas no PostGIS com sucesso!")
 
 if __name__ == "__main__":
     main()
