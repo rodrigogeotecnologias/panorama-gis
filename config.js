@@ -6,8 +6,8 @@
 // NUNCA coloque aqui a chave "service_role".
 
 window.PANORAMA_CONFIG = {
-  SUPABASE_URL: 'https://nyoyqquyjlrrsghxqzsn.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55b3lxcXV5amxycnNnaHhxenNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNDkzNzcsImV4cCI6MjEwODYyNTM3N30.l5OW4tGmAgYr_l0NDA7nqzwgsxxW0fhNQc0egNDQdLw',
+  SUPABASE_URL: 'https://api.panoramagis.com.br',
+  SUPABASE_ANON_KEY: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc5MzIzNDUyMCwiZXhwIjo0OTQ4OTA4MTIwLCJyb2xlIjoiYW5vbiJ9.msjXyWpquKGlCjwClR7mhbsuEfEdCN8nqkLQLkeXSOw',
 };
 
 // Aliases para máxima compatibilidade entre todos os módulos e páginas
