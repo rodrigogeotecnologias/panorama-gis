@@ -336,8 +336,14 @@
             showAlert(msg, true);
             return;
           }
-          if (data?.session) {
-            window.location.href = 'index.html';
+          if (data?.session || data?.user) {
+            saveSessionAndRedirect({
+              user: data.user?.user_metadata?.rt_name || userVal,
+              name: data.user?.user_metadata?.rt_name || (userVal.includes('@') ? userVal.split('@')[0].replace('.', ' ') : userVal),
+              email: data.user?.email || userVal,
+              company: data.user?.user_metadata?.company_name || 'PANORAMA GIS',
+              plan: 'Plano Profissional (ASE)'
+            });
             return;
           }
         } catch (err) {
@@ -375,7 +381,34 @@
       btn.disabled = true;
       btn.innerText = 'Criando Acesso...';
 
-      // Salva a nova conta
+      const cfg = window.PANORAMA_CONFIG || window.CONFIG || {};
+      const sbUrl = cfg.SUPABASE_URL || cfg.supabaseUrl;
+      const sbKey = cfg.SUPABASE_ANON_KEY || cfg.supabaseAnonKey;
+      const isConfigured = !!(sbUrl && sbKey && !sbUrl.includes('SEU_PROJETO') && window.supabase);
+
+      if (isConfigured) {
+        try {
+          const sb = window.supabase.createClient(sbUrl, sbKey);
+          const { data, error } = await sb.auth.signUp({
+            email: email,
+            password: pwd,
+            options: {
+              data: {
+                company_name: company,
+                rt_name: name,
+                plan_id: 'profissional'
+              }
+            }
+          });
+          if (error && !error.message?.toLowerCase().includes('already registered')) {
+            console.warn('Aviso no cadastro Supabase:', error.message);
+          }
+        } catch (err) {
+          console.warn('Erro ao registrar no Supabase:', err);
+        }
+      }
+
+      // Salva a nova conta e abre a Área do Cliente
       saveSessionAndRedirect({
         user: name,
         name: name,
